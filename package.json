@@ -1,0 +1,32 @@
+{
+  "name": "xiaopeng-yuan-portfolio",
+  "private": true,
+  "version": "0.6.27",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "prebuild": "node scripts/prepare-build.mjs",
+    "test": "node --test src/gallery-window.test.mjs src/gallery-images.test.mjs src/gallery-gaze.test.mjs qa/newspaper-layout.test.mjs qa/newspaper-image-geometry.test.mjs qa/about-beach.test.mjs qa/about-beach-model.test.mjs",
+    "postbuild": "node scripts/finalize-build.mjs",
+    "check:release": "node scripts/check-release.mjs"
+  },
+  "dependencies": {
+    "@react-three/drei": "10.7.9",
+    "@react-three/fiber": "9.8.1",
+    "@react-three/rapier": "2.2.0",
+    "gsap": "^3.13.0",
+    "meshline": "3.3.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.1.1",
+    "vite": "8.3.2"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

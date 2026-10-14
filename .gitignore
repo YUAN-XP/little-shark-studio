@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.sites-runtime/
+
+# Local review and original background retained outside the published source
+/public/cover-review.html
+/public/media/hero-beach-v3.mp4
+*.blend
+*.blend1
+*.bak

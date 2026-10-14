@@ -1,0 +1,333 @@
+import { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
+import { gsap } from 'gsap';
+import { newspaperBlocks, paginateNewspaper } from './newspaper-layout.js';
+import { afterPaint, captureGalleryCover, enterNewspaper, leaveNewspaper, turnNewspaper } from './newspaper-motion.js';
+import './NewspaperDetail.css';
+
+function Masthead({ project }) {
+  return <header className="press-masthead"><strong>LITTLE SHARK GAZETTE</strong>
+    <div><span>{project.label}专刊</span><span>{project.role}</span></div></header>;
+}
+
+function Photo({ figure, onZoom, probe = false, front = false }) {
+  return <figure className={`press-photo${front ? ' press-photo--front' : ''}`}>
+    <button type="button" tabIndex={probe ? -1 : undefined} onClick={probe ? undefined : event => onZoom(figure, event.currentTarget)}
+      aria-label={`放大图片：${figure.alt}`} className="press-photo__frame">
+      <img src={figure.src} width={figure.width} height={figure.height} alt={figure.alt} decoding="async" />
+      <span className="press-photo__zoom" aria-hidden="true">放大原图 ↗</span>
+    </button><figcaption>{figure.caption}</figcaption></figure>;
+}
+
+function ResultsTable({ table, compact = false }) {
+  return <div className="press-table-wrap"><table className="press-table">
+    <caption>{table.caption}</caption><thead><tr>{table.columns.map(column => <th key={column} scope="col">{column}</th>)}</tr></thead>
+    <tbody>{table.rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => cellIndex === 0
+      ? <th scope="row" key={cellIndex}>{cell}</th> : <td key={cellIndex}>{cell}</td>)}</tr>)}</tbody>
+  </table>{!compact && table.note && <p className="press-fineprint">{table.note}</p>}</div>;
+}
+
+function PressBlock({ block, project, onZoom, onPlay, onJump, probe = false }) {
+  if (block.kind === 'cover') return <div className="press-cover">
+    <header><p className="press-eyebrow">{project.english} / 项目记录</p>
+      <h2 id={probe ? undefined : 'project-detail-title'}>{project.title}</h2><p className="press-subtitle">{project.fullTitle}</p></header>
+    <div className={`press-cover__visual${!project.metrics?.length ? ' press-cover__visual--wide' : ''}`}>
+      <figure><div className="press-cover__picture"><img src={project.image} alt={project.alt} decoding="async" /></div>
+        <figcaption>概念插画 · 纸内动态</figcaption></figure>
+      {project.metrics?.length > 0 && <aside className="press-metrics"><span>项目档案</span>{project.metrics.map(metric =>
+        <div key={metric.label}><strong>{metric.value}</strong><span>{metric.label}</span></div>)}</aside>}
+    </div><p className="press-cover__intro">{project.intro}</p>
+    <div className="press-byline"><span>{project.role}</span><span>{project.period}</span></div>
+  </div>;
+  if (block.kind === 'overview') return <div className="press-overview">
+    <Masthead project={project} />
+    {block.featureFigure || block.featureTable ? <section className="press-front-feature">
+      <p className="press-eyebrow">过程与记录 / FROM THE PROJECT</p><h3>{block.featureTable ? '四种模型，放在一起比较' : block.featureTitle}</h3>
+      <div className={`press-front-feature__body${block.featureTable && block.featureFigure ? ' press-front-feature__body--comparison' : ''}`}>
+        {block.featureFigure && <Photo figure={block.featureFigure} onZoom={onZoom} probe={probe} front />}
+        {block.featureTable && <ResultsTable table={block.featureTable} compact />}
+      </div>
+      {block.featureTable?.note && <p className="press-fineprint">{block.featureTable.note}</p>}
+      <button type="button" className="press-read-on" onClick={() => onJump(block.sections[0]?.id)} tabIndex={probe ? -1 : undefined}>继续阅读项目记录 →</button>
+    </section> : <section className="press-front-index"><p className="press-eyebrow">本期导读 / IN THIS ISSUE</p>
+      <h3>{project.videos?.length ? '影像作品' : '创作记录'}</h3>
+      {(project.videos || []).map(film => <button key={film.id} type="button" onClick={() => onJump(`film-${film.id}`)} tabIndex={probe ? -1 : undefined}>
+        <strong>{film.title}</strong><span>{film.context}</span><i aria-hidden="true">→</i></button>)}
+      {block.sections.length > 0 && <div className="press-front-index__items">{block.sections.map(section => <button key={section.id} type="button" onClick={() => onJump(section.id)} tabIndex={probe ? -1 : undefined}>
+        <strong>{section.title}</strong><i aria-hidden="true">→</i></button>)}</div>}
+    </section>}
+    <div className="press-toolbox"><span>创作与实践 / THE TOOLBOX</span><strong>{project.tags.join(' · ')}</strong></div>
+  </div>;
+  if (block.kind === 'heading') return <h3 className="press-section-title">{block.title}{block.continued && <small>（续）</small>}</h3>;
+  if (block.kind === 'copy') return <p className="press-copy" data-paragraph={block.paragraphId}>{block.text}</p>;
+  if (block.kind === 'figure') return <Photo figure={block.figure} onZoom={onZoom} probe={probe} />;
+  if (block.kind === 'table') return <ResultsTable table={block.table} />;
+  if (block.kind === 'links') return <ul className="press-links">{block.links.map(link => <li key={link.href}><a href={link.href} target="_blank" rel="noreferrer" tabIndex={probe ? -1 : undefined}>{link.label} ↗</a></li>)}</ul>;
+  if (block.kind === 'film') {
+    const film = block.film;
+    return <section className="press-film"><p className="press-eyebrow">影像作品 / STORIES IN FRAMES</p>
+      <h3 id={probe ? undefined : `film-${film.id}-title`}>{film.title}</h3><p className="press-subtitle">{film.context}</p>
+      {probe ? <img className="press-turn-poster" src={film.poster} alt="" style={{ aspectRatio: `${film.width} / ${film.height}` }} />
+        : <video controls playsInline preload="none" src={film.src} poster={film.poster}
+          style={{ aspectRatio: `${film.width} / ${film.height}` }} aria-labelledby={`film-${film.id}-title`} onPlay={onPlay}>
+          <a href={film.src}>打开{film.title}视频</a></video>}
+      <p className="press-fineprint">{film.title} · 点击播放，可使用播放器全屏观看。</p>
+    </section>;
+  }
+  if (block.kind === 'film-notes') return <section className="press-film-notes"><Masthead project={project} />
+    <p className="press-eyebrow">{block.film.title} / BEHIND THE FRAMES</p><h3>制作说明</h3>
+    {block.film.productionNotes.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+  </section>;
+  return null;
+}
+
+function NewspaperReader({ project, dialog, onClose, reducedMotion, controllerRef, shade, flightHost }) {
+  const blocks = useMemo(() => newspaperBlocks(project), [project]);
+  const book = useRef(null), surface = useRef(null), live = useRef(null), preview = useRef(null), leaf = useRef(null);
+  const measure = useRef(null), imageDialog = useRef(null), zoomOrigin = useRef(null), readGeometry = useRef(null);
+  const opening = useRef(null), moving = useRef(null), turning = useRef(null), entry = useRef(null), closing = useRef(false);
+  const phaseRef = useRef('opening'), spreadRef = useRef(0), pagesRef = useRef(null), geometryRef = useRef(null);
+  const [geometry, setGeometry] = useState({ width: 390, height: 480, stacked: false });
+  const [pages, setPages] = useState(() => [{ key: blocks[0].id, name: '头版', blocks: [blocks[0]] }, { key: blocks[1].id, name: '本期导读', blocks: [blocks[1]] }]);
+  const [spread, setSpread] = useState(0), [turn, setTurn] = useState(null), [phase, setPhase] = useState('opening');
+  const [hidden, setHidden] = useState(document.hidden), [systemReduced, setSystemReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [zoom, setZoom] = useState(null);
+  const spreadCount = Math.ceil(pages.length / 2);
+  pagesRef.current = pages; geometryRef.current = geometry;
+  const reduced = reducedMotion || systemReduced;
+  const motionStopped = reduced || hidden || phase !== 'idle';
+  const updatePhase = value => { phaseRef.current = value; setPhase(value); };
+  const placeSpread = index => { spreadRef.current = index; setSpread(index); };
+  const stopPlayers = () => dialog.current?.querySelectorAll('video').forEach(player => player.pause());
+  const changeSpread = (index, force = false) => {
+    const target = Math.max(0, Math.min(Math.ceil(pagesRef.current.length / 2) - 1, index));
+    if (target === spreadRef.current) return Promise.resolve();
+    if (turning.current) return turning.current.promise;
+    if (!force && (closing.current || phaseRef.current !== 'idle')) return Promise.resolve();
+    stopPlayers();
+    let resolve;
+    const promise = new Promise(done => { resolve = done; });
+    turning.current = { promise, resolve, focus: document.activeElement };
+    updatePhase(closing.current ? 'returning' : 'turning');
+    setTurn({ from: spreadRef.current, to: target, direction: target > spreadRef.current ? 1 : -1 });
+    return promise;
+  };
+  const jumpTo = sectionId => {
+    const index = pagesRef.current.findIndex(page => page.blocks.some(block => block.id === sectionId || block.sectionId === sectionId));
+    if (index >= 0) void changeSpread(Math.floor(index / 2));
+  };
+  const zoomPhoto = (figure, origin) => { zoomOrigin.current = origin; setZoom(figure); };
+  const closePhoto = () => { imageDialog.current?.close(); setZoom(null); zoomOrigin.current?.focus({ preventScroll: true }); };
+  const playVideo = event => dialog.current?.querySelectorAll('video').forEach(player => {
+    if (player !== event.currentTarget) player.pause();
+  });
+  useEffect(() => {
+    const listener = () => { setHidden(document.hidden); if (document.hidden) { stopPlayers(); moving.current?.finish(); turning.current?.task?.finish(); } };
+    document.addEventListener('visibilitychange', listener);
+    return () => document.removeEventListener('visibilitychange', listener);
+  }, []);
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const listener = () => setSystemReduced(preference.matches);
+    preference.addEventListener('change', listener);
+    return () => preference.removeEventListener('change', listener);
+  }, []);
+  useEffect(() => {
+    if (zoom) imageDialog.current?.showModal();
+  }, [zoom]);
+  useLayoutEffect(() => {
+    const node = book.current;
+    const readSize = () => {
+      const body = node.querySelector('.press-sheet__body');
+      const stacked = window.matchMedia('(max-width: 899px)').matches;
+      // clientWidth rounds fractional pixels; a slightly wider probe can miss a wrapped line.
+      const width = Math.floor(parseFloat(getComputedStyle(body).width) * 64) / 64;
+      const height = stacked ? 760 : Math.floor(body.clientHeight);
+      if (width > 0 && height > 0 && (geometryRef.current.width !== width || geometryRef.current.height !== height || geometryRef.current.stacked !== stacked)) {
+        moving.current?.finish(); turning.current?.task?.finish();
+        queueMicrotask(() => { if (!disposed) setGeometry({ width, height, stacked }); });
+      }
+    };
+    readGeometry.current = readSize;
+    readSize();
+    const observer = new ResizeObserver(readSize); observer.observe(node);
+    window.addEventListener('resize', readSize);
+    let disposed = false;
+    document.fonts.ready.then(() => { if (!disposed) readSize(); });
+    return () => { disposed = true; readGeometry.current = null; observer.disconnect(); window.removeEventListener('resize', readSize); };
+  }, []);
+  useLayoutEffect(() => {
+    let disposed = false;
+    const paginate = () => {
+      if (disposed) return;
+      const heights = {};
+      measure.current.querySelectorAll('[data-measure-id]').forEach(node => { heights[node.dataset.measureId] = Math.ceil(node.getBoundingClientRect().height); });
+      const next = paginateNewspaper(blocks, heights, geometry.height - 3);
+      const anchor = pagesRef.current[spreadRef.current * 2]?.blocks.find(block => !block.continued)?.id;
+      const located = next.findIndex(page => page.blocks.some(block => !block.continued && block.id === anchor));
+      setPages(next);
+      placeSpread(closing.current ? 0 : located < 0 ? Math.min(spreadRef.current, Math.ceil(next.length / 2) - 1) : Math.floor(located / 2));
+    };
+    paginate(); document.fonts.ready.then(paginate);
+    return () => { disposed = true; };
+  }, [blocks, geometry]);
+  useLayoutEffect(() => {
+    if (geometry.stacked) dialog.current?.scrollTo({ top: 0, behavior: 'instant' });
+  }, [spread, geometry.stacked]);
+  useLayoutEffect(() => {
+    if (!turn) return;
+    const operation = turning.current;
+    const task = turnNewspaper({ live: live.current, preview: preview.current, leaf: leaf.current,
+      direction: turn.direction, stacked: geometryRef.current.stacked, reduced, signal: entry.current?.signal });
+    operation.task = task;
+    task.promise.then(completed => {
+      if (!completed || entry.current?.signal.aborted) { operation.resolve(); return; }
+      flushSync(() => { placeSpread(Math.min(turn.to, Math.ceil(pagesRef.current.length / 2) - 1)); setTurn(null); updatePhase(closing.current ? 'returning' : 'idle'); });
+      gsap.set(live.current, { clearProps: 'opacity,transform' });
+      turning.current = null;
+      if (!operation.focus?.isConnected) book.current.querySelector('[data-return-main]')?.focus({ preventScroll: true });
+      operation.resolve();
+    });
+    return () => { task.cancel(); operation.resolve(); };
+  }, [turn]);
+  const navigateKey = event => {
+    if (event.target.closest?.('video, input, select, textarea') || zoom || event.altKey || event.metaKey || event.ctrlKey) return;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+      event.preventDefault();
+      void changeSpread(spreadRef.current + (event.key === 'ArrowRight' ? 1 : -1));
+    }
+  };
+  useImperativeHandle(controllerRef, () => ({
+    navigateKey,
+    enter: options => {
+      entry.current = options; closing.current = false; updatePhase('opening');
+      opening.current = (async () => {
+        await document.fonts.ready;
+        if (options.signal.aborted) return;
+        readGeometry.current?.();
+        if (!await afterPaint(options.signal, 1)) return;
+        if (options.source) options.hideSource();
+        const task = enterNewspaper({ surface: surface.current, shade: shade.current, host: flightHost.current,
+          source: options.source, book: book.current, reduced, signal: options.signal });
+        moving.current = task;
+        await task.promise;
+        if (!options.signal.aborted && !closing.current) {
+          flushSync(() => updatePhase('idle'));
+          book.current.querySelector('[data-return-main]')?.focus({ preventScroll: true });
+        }
+      })();
+      return opening.current;
+    },
+    exit: async () => {
+      if (closing.current) return;
+      closing.current = true; stopPlayers();
+      await opening.current;
+      await turning.current?.promise;
+      if (entry.current?.signal.aborted) return;
+      if (spreadRef.current !== 0) await changeSpread(0, true);
+      updatePhase('closing');
+      dialog.current.scrollTo({ top: 0, behavior: 'instant' });
+      if (!await afterPaint(entry.current.signal, 1)) return;
+      const task = leaveNewspaper({ surface: surface.current, shade: shade.current, host: flightHost.current,
+        source: entry.current.source, book: book.current, reduced, signal: entry.current.signal, restoreSource: entry.current.restoreSource });
+      moving.current = task;
+      await task.promise;
+    },
+  }));
+  const shared = { project, onZoom: zoomPhoto, onPlay: playVideo, onJump: jumpTo };
+  const chapterLabels = Array.from({ length: spreadCount }, (_, index) => pages[index * 2].name);
+  const renderSpread = (index, ghost = false) => <div ref={ghost ? preview : live}
+    className={`press-spread press-spread--${ghost ? 'preview' : 'live'}`} aria-hidden={ghost || undefined} inert={ghost || !!turn || phase !== 'idle'}>
+    {[0, 1].map(side => {
+      const page = pages[index * 2 + side];
+      return <section className={`press-sheet press-sheet--${side === 0 ? 'left' : 'right'}`} key={side}
+        aria-label={page?.name || '本期目录'} data-page={index * 2 + side + 1}>
+        <header className="press-running-head"><span>{project.english}</span>
+          {side === 0 && <span className="press-running-category">{project.label} · 项目记录</span>}
+          <button type="button" className={`press-return${side === 0 ? ' press-return--narrow' : ''}`} data-return-main={side === 1 || undefined}
+            autoFocus={!ghost && side === 1} tabIndex={ghost ? -1 : undefined} onClick={ghost ? undefined : onClose}>返回主界面</button>
+        </header>
+        <div className="press-sheet__body">
+          {page ? page.blocks.map(block => <div className={`press-unit press-unit--${block.kind}`} data-unit={block.id} data-continued={block.continued || undefined} key={`${block.id}-${!!block.continued}`}>
+            <PressBlock block={block} {...shared} probe={ghost} /></div>) : <section className="press-last-index"><Masthead project={project} /><h3>本期目录</h3>
+            {chapterLabels.map((label, chapter) => <button type="button" key={chapter} tabIndex={ghost ? -1 : undefined} onClick={() => changeSpread(chapter)}>{label} <span aria-hidden="true">↗</span></button>)}
+          </section>}
+        </div>
+      </section>;
+    })}
+  </div>;
+  const proximity = event => {
+    if (event.pointerType === 'touch') return;
+    const rect = surface.current.getBoundingClientRect();
+    const near = event.clientX - rect.left < 68 ? 'left' : rect.right - event.clientX < 68 ? 'right' : '';
+    if (surface.current.dataset.edge !== near) surface.current.dataset.edge = near;
+  };
+  return <article className="press-reader" data-project={project.id} data-motion={motionStopped ? 'paused' : 'playing'} data-phase={phase}
+    data-spread={spread} data-spread-count={spreadCount} onPointerMove={proximity} onPointerLeave={() => { if (surface.current) surface.current.dataset.edge = ''; }}
+    onKeyDown={navigateKey}
+    style={{ '--press-content-width': `${geometry.width}px`, '--press-content-height': `${geometry.height}px` }}>
+    <div className="press-desk"><div ref={surface} className="press-paper-surface" style={{ opacity: 0 }}>
+      <div className="press-book" ref={book} data-turn={turn ? turn.direction > 0 ? 'forward' : 'backward' : undefined}>
+        {turn && renderSpread(turn.to, true)}{renderSpread(spread)}
+        {turn && <div ref={leaf} className={`press-turn-leaf press-turn-leaf--${turn.direction > 0 ? 'forward' : 'backward'}`} aria-hidden="true" inert />}
+      </div>
+      {[-1, 1].map(direction => <button type="button" key={direction}
+        className={`press-edge press-edge--${direction < 0 ? 'left' : 'right'}`} aria-label={direction > 0 ? '下一版' : '上一版'}
+        disabled={phase !== 'idle' || (direction < 0 ? spread === 0 : spread === spreadCount - 1)} onClick={() => changeSpread(spread + direction)}>
+        <span className="press-edge__tag" aria-hidden="true">{direction < 0 ? '← 翻页' : '翻页 →'}</span>
+        <span className="press-edge__arrow" aria-hidden="true">{direction < 0 ? '‹' : '›'}</span>
+      </button>)}
+    </div></div>
+    <span className="sr-only" role="status" aria-live="polite">{phase === 'turning' ? '正在翻页' : `${project.label} · ${chapterLabels[spread]}`}</span>
+    <div className="press-measure" ref={measure} aria-hidden="true" inert>
+      {blocks.filter(block => !block.isolated).flatMap(block => block.kind === 'heading' ? [block, { ...block, continued: true }] : [block]).map(block => <div key={`${block.id}-${!!block.continued}`} data-measure-id={block.continued ? `${block.id}:continued` : block.id}><PressBlock block={block} {...shared} probe /></div>)}
+    </div>
+    <dialog className="press-lightbox" ref={imageDialog} aria-label="项目图片原图" onCancel={event => { event.preventDefault(); event.stopPropagation(); closePhoto(); }} onClick={event => { if (event.target === event.currentTarget) closePhoto(); }}>
+      {zoom && <><header><span>项目图片 · 原图</span><button autoFocus type="button" onClick={closePhoto} aria-label="关闭图片">关闭 ×</button></header>
+        <img src={zoom.src} width={zoom.width} height={zoom.height} alt={zoom.alt} /><p>{zoom.caption}</p><a href={zoom.src} target="_blank" rel="noreferrer">在新窗口查看原图 ↗</a></>}
+    </dialog>
+  </article>;
+}
+
+export default function ProjectDetail({ project, origin: galleryOrigin, onClose, reducedMotion = false }) {
+  const dialog = useRef(null), reader = useRef(null), shade = useRef(null), flightHost = useRef(null);
+  const closeRef = useRef(onClose), closing = useRef(false);
+  const requestClose = async () => {
+    if (closing.current) return;
+    closing.current = true;
+    dialog.current?.querySelectorAll('video').forEach(player => player.pause());
+    await reader.current?.exit();
+    onClose();
+  };
+  closeRef.current = requestClose;
+  useEffect(() => {
+    if (!project) return;
+    closing.current = false;
+    const node = dialog.current, origin = galleryOrigin || document.activeElement;
+    const source = captureGalleryCover(galleryOrigin), signal = new AbortController();
+    const visibility = galleryOrigin?.style.visibility;
+    const restoreSource = () => { if (galleryOrigin?.isConnected) galleryOrigin.style.visibility = visibility || ''; };
+    const overflow = document.body.style.overflow;
+    const padding = document.body.style.paddingRight;
+    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
+    const position = { top: window.scrollY, left: window.scrollX, behavior: 'instant' };
+    if (scrollbar > 0) document.body.style.paddingRight = `${parseFloat(getComputedStyle(document.body).paddingRight) + scrollbar}px`;
+    node.showModal(); document.body.style.overflow = 'hidden'; window.scrollTo(position);
+    void reader.current.enter({ source, signal: signal.signal, restoreSource,
+      hideSource: () => { if (galleryOrigin?.isConnected) galleryOrigin.style.visibility = 'hidden'; } });
+    return () => {
+      signal.abort(); restoreSource();
+      node.querySelectorAll('video').forEach(player => player.pause());
+      node.close(); document.body.style.overflow = overflow; document.body.style.paddingRight = padding;
+      origin?.focus({ preventScroll: true }); window.scrollTo(position);
+    };
+  }, [project]);
+  return <dialog ref={dialog} className="project-detail newspaper-detail" aria-label={project ? `${project.label} · 项目报纸` : '项目报纸'}
+    onKeyDown={event => { if (!event.defaultPrevented) reader.current?.navigateKey(event); }}
+    onCancel={event => { if (event.target !== event.currentTarget) return; event.preventDefault(); closeRef.current(); }} onClick={event => { if (event.target === event.currentTarget) closeRef.current(); }}>
+    <div ref={shade} className="press-darkness" aria-hidden="true" style={{ opacity: 0 }} />
+    {project && <NewspaperReader key={project.id} project={project} dialog={dialog} controllerRef={reader} shade={shade} flightHost={flightHost}
+      onClose={requestClose} reducedMotion={reducedMotion} />}
+    <div ref={flightHost} className="press-flight-host" aria-hidden="true" />
+  </dialog>;
+}

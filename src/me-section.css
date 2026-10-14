@@ -1,0 +1,77 @@
+/* Personal dossier: upright holographic portrait + introduction and chronology. */
+.about > .page-width.me-content { padding-block: clamp(126px, 9.8vw, 156px) clamp(85px, 8vw, 132px); }
+.me-dossier { display: grid; grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr); gap: clamp(48px, 6vw, 112px); align-items: start; }
+.me-card-column { width: 100%; max-width: 360px; margin-inline: auto; margin-top: 78px; }
+.shark-profile-card { width: 100%; --card-radius: 25px; }
+.shark-profile-card .pc-card { width: 100%; height: auto; min-height: 520px; max-height: none; aspect-ratio: .72; background: #163f57; box-shadow: 0 16px 40px rgba(14, 54, 79, .16), inset 0 0 0 1px rgba(237, 251, 255, .5); }
+.shark-profile-card .pc-card-shell { border-radius: var(--card-radius); }
+.shark-profile-card .pc-card {
+  transform-origin: 50% 17px;
+  --slot-mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="28" height="10"%3E%3Crect width="28" height="10" rx="5" fill="white"/%3E%3C/svg%3E');
+  mask-image: var(--slot-mask), linear-gradient(#fff, #fff);
+  mask-size: 28px 10px, 100% 100%;
+  mask-position: 50% 12px, 0 0;
+  mask-repeat: no-repeat;
+  mask-composite: exclude;
+  -webkit-mask-image: var(--slot-mask), linear-gradient(#fff, #fff);
+  -webkit-mask-size: 28px 10px, 100% 100%;
+  -webkit-mask-position: 50% 12px, 0 0;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-composite: xor;
+}
+.shark-profile-card .pc-card::after { content: ''; position: absolute; left: 50%; top: 10px; width: 32px; height: 14px; transform: translateX(-50%); border-radius: 7px; border: 1px solid rgba(200, 224, 235, .65); box-shadow: inset 0 1px 2px #071f3180, 0 1px 1px #f1f7fb40; z-index: 6; pointer-events: none; }
+.shark-profile-card .pc-inside { background-color: #1e4b65; }
+.shark-profile-card .pc-avatar-content { mix-blend-mode: normal; }
+.shark-profile-card .pc-avatar-content .avatar { top: auto; bottom: -1px; width: 112%; height: calc(100% - 56px); object-fit: contain; object-position: center bottom; border-radius: 0; mask-image: linear-gradient(to bottom, #000 0%, #000 96%, transparent 100%); }
+.shark-profile-card .pc-glare { opacity: .36; }
+.shark-profile-card .pc-shine { mask-size: 150px 117px; transform: translate3d(0, 0, 3px); mix-blend-mode: screen; background-color: #83bbcf; background-blend-mode: screen; filter: brightness(.88) contrast(1.08) saturate(.7) opacity(.52); }
+.shark-profile-card .pc-card:hover .pc-shine,
+.shark-profile-card .pc-card.active .pc-shine,
+.shark-profile-card .pc-card-shell.active .pc-shine { filter: brightness(.98) contrast(1.08) saturate(.8) opacity(.75); }
+.shark-profile-card .pc-shine::before { mix-blend-mode: screen; filter: brightness(1.1) contrast(1.08) saturate(.8); }
+.shark-profile-card .pc-shine::after { mix-blend-mode: screen; background-blend-mode: screen; filter: brightness(.95) contrast(1.08); }
+.shark-profile-card .pc-content:not(.pc-avatar-content) { mix-blend-mode: normal; }
+.shark-profile-card .pc-details { top: 34px; gap: 5px; }
+.shark-profile-card .pc-details h3 { font-size: clamp(22px, 2vw, 27px); line-height: 1.16; letter-spacing: .035em; background: none; -webkit-text-fill-color: currentColor; color: #fff0cf; }
+.shark-profile-card .pc-details p { top: 0; width: auto; max-width: 90%; font-size: 11px; line-height: 1.4; letter-spacing: .1em; font-weight: 400; background: none; -webkit-text-fill-color: currentColor; color: #d5e8ee; }
+.me-information { min-width: 0; padding-top: 1px; }
+.me-handwritten { font-size: 26px; line-height: 1.1; color: #2f6787; margin-bottom: 17px; }
+.me-intro-text { max-width: 740px; margin-top: 21px; font-size: 14px; line-height: 1.9; color: #2e556b; }
+.me-interests { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+.me-interests > span { padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(242, 251, 255, .4); background: rgba(221, 238, 242, .12); font-size: 10px; color: #385c72; }
+.me-experience { margin-top: 34px; }
+.me-subheading { display: flex; align-items: baseline; gap: 13px; margin-bottom: 23px; line-height: 1.3; font-size: 18px; font-weight: 700; color: #143b53; }
+.me-subheading > span:last-child { font-size: 11px; font-weight: 400; color: #47687b; }
+.me-timeline { margin: 0; padding: 0; list-style: none; }
+.me-timeline > li { position: relative; margin-left: 3px; padding: 0 0 23px 22px; border-left: 1px solid rgba(24, 74, 102, .2); }
+.me-timeline > li:last-child { padding-bottom: 0; border-left-color: transparent; }
+.me-timeline > li::before { content: ""; position: absolute; left: -4px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: #ffe5a0; box-shadow: 0 0 0 3px rgba(239, 248, 246, .23); }
+.me-experience-top { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 18px; }
+.me-experience-top h4 { font-size: 14px; font-weight: 700; line-height: 1.5; color: #143b53; }
+.me-period { font-size: 10px; line-height: 1.5; white-space: nowrap; font-variant-numeric: tabular-nums; color: #47687b; }
+.me-organization { margin-top: 3px; font-size: 10px; line-height: 1.6; color: #406579; }
+.me-experience-text { max-width: 750px; margin-top: 8px; font-size: 12px; line-height: 1.85; color: #2e556b; }
+.me-experience-label { margin-right: .65em; font-weight: 600; color: #21485f; }
+@media (max-width: 1000px) {
+  .me-dossier { grid-template-columns: minmax(255px, .78fr) minmax(0, 1.22fr); gap: 42px; }
+  .me-intro-text { font-size: 13px; }
+}
+@media (max-width: 760px) {
+  .about > .page-width.me-content { padding-top: 112px; }
+  .me-dossier { grid-template-columns: 1fr; gap: 47px; }
+  .me-card-column { width: min(100%, 340px); margin-top: 54px; }
+  .shark-profile-card .pc-card { min-height: 480px; }
+  .shark-profile-card .pc-avatar-content .avatar { height: calc(100% - 46px); }
+  .shark-profile-card .pc-details { top: 32px; gap: 4px; }
+  .shark-profile-card .pc-details h3 { font-size: 24px; }
+  .me-information { width: 100%; max-width: 620px; margin-inline: auto; }
+  .me-handwritten { font-size: 25px; margin-bottom: 15px; }
+  .me-experience { margin-top: 29px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shark-profile-card .pc-card,
+  .shark-profile-card .avatar,
+  .shark-profile-card .pc-content { transform: none; }
+  .shark-profile-card .pc-avatar-content .avatar { transform: translateX(-50%); }
+  .shark-profile-card .pc-shine { animation: none; }
+}

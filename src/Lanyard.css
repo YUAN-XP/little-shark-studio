@@ -1,0 +1,25 @@
+.hanging-profile { position: relative; width: 100%; aspect-ratio: .72; min-height: 520px; }
+.hanging-overlay { position: absolute; left: 0; width: 100%; z-index: 80; pointer-events: none; isolation: isolate; --strap-drop: 220px; --hanger-rise: 39px; }
+.hanging-overlay[data-visible="false"] { visibility: hidden; }
+.hanging-assembly { position: absolute; inset: 0; }
+.hanging-portal-frame { position: absolute; z-index: 2; transform-origin: 50% 50%; pointer-events: none; }
+.hanging-card-pose { position: relative; width: 100%; transform-origin: 50% 50%; z-index: 1; touch-action: pan-y; }
+.hanging-card-pose { pointer-events: auto; }
+.hanging-overlay[data-lanyard-mode="physics"] .hanging-card-pose { cursor: grab; }
+.hanging-overlay[data-dragging="true"] .hanging-card-pose { cursor: grabbing; user-select: none; will-change: transform; }
+.profile-lanyard-canvas { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; }
+.hanging-overlay[data-lanyard-mode="physics"] .profile-lanyard-canvas { opacity: 1; }
+.lanyard-wrapper { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.lanyard-wrapper > div, .lanyard-wrapper canvas { pointer-events: none !important; }
+.profile-drag-handle { position: absolute; z-index: 3; left: 50%; top: calc(-1 * var(--hanger-rise) - 9px); transform: translateX(-50%); width: 52px; height: calc(var(--hanger-rise) + 32px); border: 0; padding: 0; border-radius: 12px; background: transparent; color: transparent; cursor: grab; touch-action: none; }
+.profile-drag-handle:disabled { pointer-events: none; }
+.profile-drag-handle:focus-visible { outline: 2px solid #fff0c8; outline-offset: 4px; box-shadow: 0 0 0 5px #16415b45; }
+.hanging-overlay[data-dragging="true"] .profile-drag-handle { cursor: grabbing; }
+.profile-static-hanger { position: absolute; left: 50%; top: calc(-1 * var(--strap-drop)); height: var(--strap-drop); width: 40px; transform: translateX(-50%); z-index: 2; pointer-events: none; }
+.hanging-overlay[data-lanyard-mode="physics"] .profile-static-hanger { opacity: 0; }
+.profile-static-band { position: absolute; top: 0; bottom: var(--hanger-rise); left: 50%; width: 13px; transform: translateX(-50%); background: #050506; overflow: hidden; border-radius: 0 0 4px 4px; clip-path: inset(var(--anchor-inset, 16px) 0 0 0); }
+.profile-static-band::before { content: ""; position: absolute; left: 13px; top: 0; width: calc(var(--strap-drop) - var(--hanger-rise)); height: 13px; transform-origin: 0 0; transform: rotate(90deg); background: url('./assets/lanyard/shark-band.svg') 0 0/52px 13px repeat-x; }
+.profile-static-clip { position: absolute; top: calc(var(--strap-drop) - var(--hanger-rise)); left: 50%; width: 31px; height: var(--clip-height, 26px); transform: translateX(-50%); border: 5px solid #b8c9d0; border-radius: 7px; box-shadow: inset 1px 1px 1px #f1f7f8,1px 2px 2px #29495a70; }
+.profile-static-clamp { position: absolute; top: calc(var(--strap-drop) - var(--hanger-rise) + var(--clip-height, 26px)); left: 50%; width: 11px; height: var(--clamp-height, 44px); transform: translateX(-50%); border-radius: 3px; background: linear-gradient(90deg,#778c97,#d3e2e8 48%,#8d9eaa); box-shadow: 0 2px 3px #153b5060; }
+@media (prefers-reduced-motion: reduce) { .hanging-card-pose { transform: none !important; } .profile-lanyard-canvas, .profile-static-hanger { transition: none; } }
+@media (max-width: 760px) { .hanging-profile { min-height: 480px; } }

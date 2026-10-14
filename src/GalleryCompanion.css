@@ -1,0 +1,10 @@
+.project-gallery-composition { width: 100%; --companion-size: clamp(260px, 27vw, 330px); }
+.gallery-companion { position: relative; width: calc(100% - 112px); margin: 0 auto 32px; pointer-events: none; user-select: none; }
+.gallery-companion__art { position: relative; width: min(var(--companion-size), 100%); aspect-ratio: 3 / 2; margin: 0 auto; z-index: 1; }
+.gallery-companion__art > img { display: block; width: 100%; height: 100%; object-fit: contain; -webkit-user-drag: none; }
+.gallery-companion__eyes { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.gallery-companion__desk { position: absolute; bottom: calc(5% - 7px); left: 0; width: 100%; height: 14px; overflow: visible; color: #263c43; }
+@media (max-width: 640px) {
+  .project-gallery-composition { --companion-size: 280px; }
+  .gallery-companion { width: 100%; margin-bottom: 54px; }
+}

@@ -1,0 +1,73 @@
+.about-beach {
+  position: relative; isolation: isolate; width: 100%; aspect-ratio: 1672 / 941;
+  min-height: 440px; max-height: min(850px, calc(100svh - 112px)); overflow: hidden; background: #70bdf5;
+  --reading-left: 50%; --reading-top: 50%; --reading-width: 420px; --reading-height: 420px;
+}
+.about-beach__poster, .about-beach__foreground { position: absolute; inset: 0; width: 100%; height: 100%; }
+.about-beach__canvas { position: absolute; inset: -20px; width: calc(100% + 40px); height: calc(100% + 40px); }
+.about-beach__poster { object-fit: cover; transition: opacity .65s ease; }
+.about-beach__canvas, .about-beach__foreground { opacity: 0; transition: opacity .65s ease; pointer-events: none; }
+.about-beach--ready .about-beach__canvas, .about-beach--ready .about-beach__foreground { opacity: 1; }
+.about-beach--ready .about-beach__poster { opacity: 0; pointer-events: none; }
+.about-beach__heading {
+  position: absolute; z-index: 2; top: clamp(24px, 2.2vw, 36px); left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: 90%; text-align: center; color: #18475a;
+  font-size: clamp(28px, 3.7vw, 57px); line-height: 1.25; letter-spacing: -.055em;
+  pointer-events: none; transition: opacity .45s ease;
+}
+.about-beach:not([data-phase="overview"]) .about-beach__heading { opacity: 0; }
+.about-beach__objects { position: absolute; inset: 0; z-index: 3; pointer-events: none; transition: opacity .35s; }
+.about-beach:not([data-phase="overview"]) .about-beach__objects { opacity: 0; }
+.about-beach__object { position: absolute; padding: 0; border: 0; background: transparent; pointer-events: auto; border-radius: 48%; }
+.about-beach__object--website { left: 24%; top: 35%; width: 19%; height: 51%; }
+.about-beach__object--studio-name { left: 62%; top: 12%; width: 12%; height: 73%; border-radius: 48% 48% 12% 12%; }
+.about-beach__object:disabled { cursor: default; }
+.about-beach__object-label {
+  position: absolute; top: calc(100% + 10px); left: 50%; transform: translate(-50%, 4px) rotate(-3deg);
+  opacity: 0; white-space: nowrap; color: #20485b; font: 600 clamp(14px, 1.3vw, 19px)/1.3 Caveat, 'Microsoft YaHei', sans-serif;
+  transition: opacity .2s, transform .2s; pointer-events: none;
+}
+.about-beach__object:hover .about-beach__object-label, .about-beach__object:focus-visible .about-beach__object-label { opacity: 1; transform: translate(-50%, 0) rotate(-3deg); }
+.about-beach__story {
+  position: absolute; z-index: 4; left: var(--reading-left); top: var(--reading-top);
+  width: var(--reading-width); height: var(--reading-height); margin: 0;
+  display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 16px);
+  transform: translate(-50%, calc(-50% + 7px)); opacity: 0; visibility: hidden;
+  transition: opacity .4s ease, transform .4s ease, visibility .4s; color: #254347;
+  outline: none; pointer-events: none;
+}
+.about-beach[data-phase="reading"] .about-beach__story { opacity: 1; transform: translate(-50%, -50%); visibility: visible; pointer-events: auto; }
+.about-beach__story--website {
+  display: block; border-radius: 50%; padding: 0; background: transparent; box-shadow: none;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, .7); color: #173d48;
+  --ring-heading-size: clamp(20px, 2vw, 30px);
+}
+.about-beach__story--website h3 { position: absolute; top: 6%; left: 10%; width: 80%; font-size: var(--ring-heading-size); }
+.about-beach__story--website .about-beach__story-body { position: absolute; top: calc(6% + var(--ring-heading-size) * 1.18 + 10px); bottom: calc(10% + 46px); left: 12%; width: 76%; font-size: clamp(13px, 1.2vw, 16px); line-height: 1.72; padding: 0 4px; }
+.about-beach__story--website .about-beach__return { position: absolute; bottom: 10%; right: 24%; font-size: 13px; min-height: 36px; }
+.about-beach__story--studio-name { padding: 10px 8px; height: auto; max-height: var(--reading-height); }
+.about-beach__story--studio-name .about-beach__story-body { flex: 0 1 auto; max-height: calc(var(--reading-height) - 130px); }
+.about-beach__story h3 { font-size: clamp(22px, 2.2vw, 33px); line-height: 1.18; letter-spacing: -.04em; text-align: center; flex-shrink: 0; }
+.about-beach__story--studio-name h3 { font-family: Caveat, 'Microsoft YaHei', sans-serif; font-size: clamp(30px, 3.1vw, 43px); }
+.about-beach__story-body { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(35, 68, 66, .3) transparent; padding-inline: 3px; font-size: clamp(13px, 1.22vw, 16px); line-height: 1.85; }
+.about-beach__story-body p + p { margin-top: 1em; }
+.about-beach__return { flex-shrink: 0; align-self: flex-end; display: flex; align-items: center; gap: 7px; border: 0; border-bottom: 1px solid rgba(35, 68, 66, .42); background: transparent; min-height: 32px; padding: 3px 6px; font-size: 14px; }
+.about-beach__return span { font-size: 24px; line-height: .8; transition: transform .25s; }
+.about-beach__return:hover span { transform: translateX(-4px); }
+.about-beach__story-body:focus-visible, .about-beach__return:focus-visible { outline: 2px solid #245960; outline-offset: 3px; }
+.about-beach--fallback:not([data-phase="overview"]) .about-beach__poster { filter: blur(8px); opacity: .65; }
+.about-beach--fallback .about-beach__story { --reading-left: 50%; --reading-top: 52%; --reading-width: min(86vw, 470px); --reading-height: min(390px, 80%); border-radius: 28px; padding: 28px; background: #f5eacc; display: flex; text-shadow: none; }
+.about-beach--fallback .about-beach__story h3, .about-beach--fallback .about-beach__story-body, .about-beach--fallback .about-beach__return { position: static; width: auto; }
+.about-beach--fallback .about-beach__story-body { flex: 1; }
+@media (max-width: 640px) {
+  .about-beach { aspect-ratio: auto; height: clamp(480px, 130vw, 560px); min-height: 480px; }
+  .about-beach__heading { top: 27px; font-size: 30px; }
+  .about-beach__story { gap: 9px; }
+  .about-beach__story-body { font-size: 13px; line-height: 1.8; }
+  .about-beach__story--website { --ring-heading-size: 22px; }
+  .about-beach__story--studio-name h3 { font-size: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-beach *, .about-beach *::before { transition-duration: .01ms !important; }
+}
+.about-beach[data-reduced-motion="true"] * { transition-duration: .01ms !important; }
