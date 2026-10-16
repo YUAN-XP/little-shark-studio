@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { palmMaskBounds } from "./palm-mask-bounds.js";
 
 export const BEACH_SCENE = {
   width: 1600,
@@ -50,7 +51,7 @@ export function PalmForeground({ videoRef, heroRef, palmSource, posterSource }) 
     const cropHeight = height * BEACH_SCENE.height / BEACH_SCENE.artHeight;
     const palm = new Image();
     const poster = new Image();
-    let sourcePixels = null;
+    let sourcePixels = null, spans = null;
     let disposed = false;
     let visible = true;
     let callback = null;
@@ -74,7 +75,7 @@ export function PalmForeground({ videoRef, heroRef, palmSource, posterSource }) 
       for (let y = 3; y < height - 3; y++) {
         const sway = bend * rowBend[y];
         const crown = rowCrown[y];
-        for (let x = 3; x < width - 3; x++) {
+        for (let x = spans.starts[y]; x < spans.ends[y]; x++) {
           const sx = x - sway - 1.1 * crown * (sin * xCos[x] + cos * xSin[x]);
           const sy = y - 1.05 * crown * (sin * xSin[x] - cos * xCos[x]);
           const ix = Math.floor(sx), iy = Math.floor(sy);
@@ -126,6 +127,7 @@ export function PalmForeground({ videoRef, heroRef, palmSource, posterSource }) 
       if (disposed) return;
       sourceContext.drawImage(palm, 505, 77, 849, 814, 16, 16, 349, 322);
       sourcePixels = sourceContext.getImageData(0, 0, width, height).data;
+      spans = palmMaskBounds(sourcePixels, width, height);
       refresh();
     };
     poster.onload = refresh;

@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "prebuild": "node scripts/prepare-build.mjs",
-    "test": "node --test src/gallery-window.test.mjs src/gallery-images.test.mjs src/gallery-gaze.test.mjs qa/newspaper-layout.test.mjs qa/newspaper-image-geometry.test.mjs qa/about-beach.test.mjs qa/about-beach-model.test.mjs",
+    "test": "node --test src/gallery-window.test.mjs src/gallery-images.test.mjs src/gallery-gaze.test.mjs qa/newspaper-layout.test.mjs qa/newspaper-image-geometry.test.mjs qa/about-beach.test.mjs qa/about-beach-model.test.mjs qa/about-beach-ocean.test.mjs qa/border-glow-pointer.test.mjs qa/palm-mask-bounds.test.mjs qa/lanyard-hardware.test.mjs",
     "postbuild": "node scripts/finalize-build.mjs",
     "check:release": "node scripts/check-release.mjs"
   },

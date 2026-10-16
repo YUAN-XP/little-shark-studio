@@ -1,0 +1,6 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>海滩 · 窄屏检查</title><style>body{margin:20px;background:#d9e3dd;color:#253e47;font:16px/1.6 sans-serif}header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px}button,a{font:inherit;color:inherit}iframe{border:1px solid #a1aaa3;height:740px;width:390px;display:block;background:#8bb4c9}button{padding:6px 12px}p{max-width:750px}</style></head><body>
+<header><button id="mobile">390 px 窄屏</button><button id="tablet">801 px 中屏</button><button id="desktop">1169 px 桌面</button><label><input id="motion" type="checkbox">减少动态</label><a href="/#about">返回本地网站</a></header>
+<iframe id="scene" title="实际响应式场景" src="./about-beach.html"></iframe>
+<p>使用独立 iframe 视口检查真实 CSS 断点、镜头取景和阅读交互；该页面只用于开发检查。</p>
+<script>const frame=document.querySelector('#scene');for(const [id,width] of [['mobile',390],['tablet',801],['desktop',1169]])document.querySelector('#'+id).onclick=()=>frame.style.width=width+'px';document.querySelector('#motion').onchange=event=>frame.src='./about-beach.html'+(event.target.checked?'?motion=reduced':'');</script>
+</body></html>

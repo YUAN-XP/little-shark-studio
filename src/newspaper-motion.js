@@ -1,7 +1,6 @@
 import { gsap } from 'gsap';
-import { bitmapInFrame, rectValues } from './newspaper-image-geometry.js';
+import { bitmapInFrame, paperMediaAsset, rectValues } from './newspaper-image-geometry.js';
 
-export const PAPER_FILTER = 'grayscale(1) sepia(0.65) contrast(0.93)';
 const COLOR_FILTER = 'grayscale(0) sepia(0) contrast(1)';
 
 export function captureGalleryCover(panel) {
@@ -19,12 +18,24 @@ export function captureGalleryCover(panel) {
 }
 
 export function paperCoverGeometry(book) {
-  const frame = book.querySelector('.press-cover__picture');
-  const image = frame?.querySelector('img');
-  if (!frame || !image) return null;
+  const frame = book.querySelector('[data-newspaper-flight-target], .press-cover__picture');
+  const image = frame?.querySelector('img, video');
+  const asset = paperMediaAsset(image);
+  if (!frame || !asset) return null;
   const rect = rectValues(frame.getBoundingClientRect());
-  const crop = bitmapInFrame(rect, rectValues(image.getBoundingClientRect()), { width: image.naturalWidth || 1000, height: image.naturalHeight || 1000 });
-  return crop ? { frame, rect, crop, radius: 0, filter: PAPER_FILTER } : null;
+  const fit = getComputedStyle(image).objectFit;
+  const crop = bitmapInFrame(rect, rectValues(image.getBoundingClientRect()), asset, [.5,.5], fit);
+  return crop ? { frame, rect, crop, src: asset.src, fit, radius: 0, filter: getComputedStyle(image).filter } : null;
+}
+
+export async function preparePaperTarget(book) {
+  const media = book?.querySelector('[data-newspaper-flight-target] video, .press-cover__picture img');
+  if (!media) return;
+  if (media.tagName === 'VIDEO') {
+    const poster = new Image();
+    poster.src = media.poster;
+    await poster.decode().catch(() => {});
+  } else await media.decode().catch(() => {});
 }
 
 export function afterPaint(signal, frames = 2) {
@@ -81,6 +92,14 @@ function moveImage(timeline, flight, target, at, duration) {
     height: target.crop.height, duration, ease: 'power2.inOut' }, at);
 }
 
+function changeFlightBitmap(timeline, flight, target, at) {
+  const image = document.createElement('img'); image.src = target.src; image.alt = '';
+  flight.frame.append(image);
+  gsap.set(image, { left: 0, top: 0, width: '100%', height: '100%', objectFit: target.fit || 'cover', opacity: 0 });
+  timeline.to(flight.image, { opacity: 0, duration: .4 }, at);
+  timeline.to(image, { opacity: 1, duration: .4 }, at);
+}
+
 export function enterNewspaper({ surface, shade, host, source, book, reduced, signal }) {
   const target = paperCoverGeometry(book);
   gsap.set(surface, { opacity: 0 }); gsap.set(shade, { opacity: 0 });
@@ -93,7 +112,10 @@ export function enterNewspaper({ surface, shade, host, source, book, reduced, si
   const task = paperTimeline(timeline => {
     timeline.to(shade, { opacity: 1, duration: .4, ease: 'sine.out' }, 0);
     if (flight) {
-      moveImage(timeline, flight, target, .16, .88);
+      const changed = source.src !== target.src;
+      const crop = changed ? bitmapInFrame(target.rect,target.rect,{width:source.crop.width,height:source.crop.height}) : target.crop;
+      moveImage(timeline, flight, { ...target,crop }, .16, .88);
+      if(changed)changeFlightBitmap(timeline,flight,target,.52);
       timeline.to(surface, { opacity: 1, duration: .38, ease: 'sine.inOut' }, .94);
       timeline.call(() => { target.frame.style.visibility = ''; }, [], 1.27);
       timeline.to(flight.frame, { opacity: 0, duration: .12 }, 1.27);
@@ -109,12 +131,15 @@ export function leaveNewspaper({ surface, shade, host, source, book, reduced, si
     restoreSource(); gsap.set(surface, { opacity: 0 }); gsap.set(shade, { opacity: 0 });
     return paperTimeline(timeline => timeline.set(surface, { opacity: 0 }), signal);
   }
-  const flight = paper && target ? imageFlight(host, { ...paper, src: source.src }) : null;
+  const flight = paper && target ? imageFlight(host, paper) : null;
   if (flight) paper.frame.style.visibility = 'hidden';
   const task = paperTimeline(timeline => {
     timeline.to(surface, { opacity: 0, duration: .3, ease: 'sine.inOut' }, 0);
     if (flight) {
-      moveImage(timeline, flight, target, .26, .85);
+      const changed = paper.src !== target.src;
+      const crop = changed ? bitmapInFrame(target.rect,target.rect,{width:paper.crop.width,height:paper.crop.height},[.5,.5],paper.fit) : target.crop;
+      moveImage(timeline, flight, { ...target,crop }, .26, .85);
+      if(changed)changeFlightBitmap(timeline,flight,target,.54);
       timeline.call(restoreSource, [], 1.11);
       timeline.to(flight.frame, { opacity: 0, duration: .12 }, 1.11);
       timeline.to(shade, { opacity: 0, duration: .4, ease: 'sine.inOut' }, 1.12);

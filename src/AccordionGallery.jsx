@@ -4,6 +4,7 @@
 // retained in 06-tools/react-bits. Extensions: controlled selection and details.
 import { useRef, useEffect, useLayoutEffect, useState, useCallback, useImperativeHandle } from 'react';
 import { gsap } from 'gsap';
+import BorderGlow from './BorderGlow.jsx';
 
 import './AccordionGallery.css';
 
@@ -35,6 +36,7 @@ const AccordionGallery = ({
   showLabels = true,
   grayscale = true,
   className = '',
+  imagesEnabled = true,
   activeIndex,
   onActiveChange,
   onSelect,
@@ -240,7 +242,17 @@ const AccordionGallery = ({
         const isActive = i === active;
         const Tag = onSelect ? 'button' : item.link ? 'a' : 'div';
         return (
-          <Tag
+          <BorderGlow
+            as={Tag}
+            innerAs="span"
+            backgroundColor="transparent"
+            borderRadius={radius}
+            edgeSensitivity={18}
+            glowColor="43 85 82"
+            glowRadius={24}
+            glowIntensity={1.15}
+            colors={['#ffe5a0', '#d5eff1', '#8dcbdc']}
+            fillOpacity={.07}
             key={item.id || i}
             ref={el => (panelRefs.current[i] = el)}
             className={`ag-panel${isActive ? ' ag-panel--active' : ''}`}
@@ -262,7 +274,7 @@ const AccordionGallery = ({
             <span className="ag-panel__entry" data-motion="card">
             <span className="ag-panel__frame">
               <span className="ag-panel__media" ref={el => (mediaRefs.current[i] = el)}>
-                <img data-motion-image src={item.image} alt={item.alt || item.label || ''} draggable="false" loading="eager" decoding="async" />
+                <img data-motion-image src={imagesEnabled ? item.image : undefined} alt={item.alt || item.label || ''} draggable="false" loading="eager" decoding="async" />
               </span>
               <span className="ag-panel__overlay" aria-hidden="true" />
             </span>
@@ -276,7 +288,7 @@ const AccordionGallery = ({
               </span>
             )}
             </span>
-          </Tag>
+          </BorderGlow>
         );
       })}
     </div>

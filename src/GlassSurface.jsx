@@ -1,5 +1,8 @@
 'use client';
 
+// Rectangular SVG lens adapted from the user-supplied React Bits GlassSurface.
+// License: licenses/ReactBits-GlassSurface-LICENSE.md.
+
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef, useId } from 'react';
 import './GlassSurface.css';
@@ -23,6 +26,7 @@ const GlassSurface = ({
   xChannel = 'R',
   yChannel = 'G',
   mixBlendMode = 'difference',
+  refraction = true,
   className = '',
   style = {}
 }) => {
@@ -30,6 +34,7 @@ const GlassSurface = ({
   const filterId = `glass-filter-${uniqueId}`;
   const redGradId = `red-grad-${uniqueId}`;
   const blueGradId = `blue-grad-${uniqueId}`;
+  const softId = `soft-${uniqueId}`;
 
   const [svgSupported, setSvgSupported] = useState(false);
 
@@ -43,9 +48,9 @@ const GlassSurface = ({
   const updateMapRef = useRef(null);
 
   const generateDisplacementMap = () => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    const actualWidth = Math.max(1, Math.round(rect?.width || 400));
-    const actualHeight = Math.max(1, Math.round(rect?.height || 200));
+    const element = containerRef.current;
+    const actualWidth = Math.max(1, element?.offsetWidth || 400);
+    const actualHeight = Math.max(1, element?.offsetHeight || 200);
     const edgeSize = Math.min(actualWidth, actualHeight) * (borderWidth * 0.5);
     const radius = Math.min(borderRadius, actualWidth / 2, actualHeight / 2);
 
@@ -56,6 +61,9 @@ const GlassSurface = ({
             <stop offset="0%" stop-color="#0000"/>
             <stop offset="100%" stop-color="red"/>
           </linearGradient>
+          <filter id="${softId}" filterUnits="userSpaceOnUse" x="0" y="0" width="${actualWidth}" height="${actualHeight}" color-interpolation-filters="sRGB">
+            <feGaussianBlur stdDeviation="${blur}" />
+          </filter>
           <linearGradient id="${blueGradId}" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="#0000"/>
             <stop offset="100%" stop-color="blue"/>
@@ -64,7 +72,7 @@ const GlassSurface = ({
         <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" fill="black"></rect>
         <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${radius}" fill="url(#${redGradId})" />
         <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${radius}" fill="url(#${blueGradId})" style="mix-blend-mode: ${mixBlendMode}" />
-        <rect x="${edgeSize}" y="${edgeSize}" width="${actualWidth - edgeSize * 2}" height="${actualHeight - edgeSize * 2}" rx="${Math.max(0, radius - edgeSize)}" fill="hsl(0 0% ${brightness}% / ${opacity})" style="filter:blur(${blur}px)" />
+        <rect x="${edgeSize}" y="${edgeSize}" width="${actualWidth - edgeSize * 2}" height="${actualHeight - edgeSize * 2}" rx="${Math.max(0, radius - edgeSize)}" fill="hsl(0 0% ${brightness}% / ${opacity})" filter="url(#${softId})" />
       </svg>
     `;
 
@@ -168,7 +176,7 @@ const GlassSurface = ({
   return (
     <div
       ref={containerRef}
-      className={`glass-surface ${svgSupported ? 'glass-surface--svg' : 'glass-surface--fallback'} ${className}`}
+      className={`glass-surface ${svgSupported && refraction ? 'glass-surface--svg' : 'glass-surface--fallback'} ${className}`}
       style={containerStyle}
     >
       <svg className="glass-surface__filter" xmlns="http://www.w3.org/2000/svg">

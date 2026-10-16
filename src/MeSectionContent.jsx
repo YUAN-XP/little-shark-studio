@@ -2,11 +2,11 @@ import HangingProfileCard from './HangingProfileCard.jsx';
 import {personalIntro,experiences} from './content.js';
 import './me-section.css';
 
-export default function MeSectionContent({reducedMotion=false}) {
+export default function MeSectionContent({reducedMotion=false,suspended=false}) {
   return <div className="page-width me-content">
     <div className="me-dossier" data-motion-group>
       <div className="me-card-column" data-motion="card">
-        <HangingProfileCard reducedMotion={reducedMotion}/>
+        <HangingProfileCard reducedMotion={reducedMotion} suspended={suspended}/>
       </div>
       <div className="me-information">
         <div className="me-introduction" data-motion-group>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { projects } from '../src/content.js';
-import ProjectDetail from '../src/ProjectDetail.jsx';
+import ProjectDetail from '../src/ProjectDetailLoader.jsx';
 import '../src/styles.css';
 import '../src/ProjectGallery.css';
 function DetailCheck() {

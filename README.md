@@ -21,7 +21,7 @@ npm run dev
 npm test
 npm run build -- --base=/little-shark-studio/
 npm run check:release
-npm run preview
+npm run preview -- --base=/little-shark-studio/
 ```
 
 项目地址预览：http://127.0.0.1:4173/little-shark-studio/ 。构建输出位于 dist。
@@ -33,6 +33,8 @@ GitHub Pages 的 Source 选择 GitHub Actions。main 分支更新后，部署流
 日常修改先在本地预览，较大调整可以在独立分支完成；确认后合入 main。需要恢复旧版时，通过撤销对应提交并重新部署保留完整历史。
 
 网站使用 React、Vite、Three.js 与 React Bits。项目详情采用对开报纸，视频按需加载；关于区使用可旋转镜头的固定三维海滩模型。减少动态与不支持 WebGL 时提供阅读回退。
+
+本次优化记录见 [PERFORMANCE.md](./PERFORMANCE.md)，GitHub Desktop 更新步骤见 [DEPLOYMENT.md](./DEPLOYMENT.md)。
 
 ## 素材与许可
 

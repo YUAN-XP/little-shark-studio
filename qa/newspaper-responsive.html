@@ -1,0 +1,5 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>报纸响应式检查</title>
+<style>body{margin:18px;background:#dce1dd;font:15px/1.6 sans-serif;color:#283f47}header{display:flex;gap:10px;margin-bottom:14px}button{padding:6px 12px}iframe{display:block;border:1px solid #9daba9;width:390px;height:740px}</style></head>
+<body><header><button id="phone">390 × 740</button><button id="short">1169 × 618</button><button id="desktop">1169 × 766</button></header>
+<iframe id="paper" title="报纸实际响应式视口" src="./newspaper-details.html"></iframe>
+<script>const frame=document.querySelector('#paper');for(const [id,width,height]of [['phone',390,740],['short',1169,618],['desktop',1169,766]])document.querySelector('#'+id).onclick=()=>{frame.style.width=width+'px';frame.style.height=height+'px';};</script></body></html>

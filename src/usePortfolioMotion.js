@@ -194,7 +194,7 @@ export function usePortfolioMotion(scope, forceReduced = false) {
       };
       const openingWords = [...root.querySelectorAll('.hero-title-group [data-motion-word]')];
       const backword = root.querySelector('.hero-backword');
-      const nav = [...root.querySelectorAll('.header .brand, .navigation > *, .mobile-menu')];
+      const nav = [...root.querySelectorAll('.header .brand, .navigation > a, .mobile-menu')];
       const mouse = root.querySelector('.scroll-mouse');
       const atHome = (!location.hash || location.hash === '#home') && window.scrollY < 80;
       const openingContext = gsap.context(() => {
@@ -230,29 +230,31 @@ export function usePortfolioMotion(scope, forceReduced = false) {
       }, root);
 
       syncSections();
+      const motionContent = root.querySelector('main') || root;
       const updates = new MutationObserver(() => {
         if (updateFrame !== null || disposed) return;
         updateFrame = requestAnimationFrame(() => { updateFrame = null; syncSections(); });
       });
-      updates.observe(root, { subtree: true, childList: true,
+      updates.observe(motionContent, { subtree: true, childList: true,
         attributes: true, attributeFilter: ['data-motion-section', 'data-motion', 'data-motion-group', 'data-motion-heading', 'data-motion-image'] });
       const finishOpeningOnScroll = () => {
         if (window.scrollY > 100 && opening && opening.progress() < 1) opening.progress(1);
+        if (!opening || opening.progress() >= 1) window.removeEventListener('scroll', finishOpeningOnScroll);
       };
-      window.addEventListener('scroll', finishOpeningOnScroll, { passive: true });
+      if (opening && opening.progress() < 1) window.addEventListener('scroll', finishOpeningOnScroll, { passive: true });
       // Gallery covers live in a fixed-size frame; loading a ghost cannot alter
       // document geometry. Avoid a full ScrollTrigger refresh during a slide.
       const refreshOnLoad = event => {
         if (!event.target.closest?.('.accordion-gallery')) refresh();
       };
-      root.addEventListener('load', refreshOnLoad, true);
+      motionContent.addEventListener('load', refreshOnLoad, true);
       document.fonts.ready.then(refresh);
       return () => {
         disposed = true;
         updates.disconnect();
         ScrollTrigger.removeEventListener('scrollEnd', refreshAfterScroll);
         window.removeEventListener('scroll', finishOpeningOnScroll);
-        root.removeEventListener('load', refreshOnLoad, true);
+        motionContent.removeEventListener('load', refreshOnLoad, true);
         if (refreshFrame !== null) cancelAnimationFrame(refreshFrame);
         if (updateFrame !== null) cancelAnimationFrame(updateFrame);
         for (const [section, record] of records) {
@@ -265,23 +267,4 @@ export function usePortfolioMotion(scope, forceReduced = false) {
     }, root);
     return () => match.revert();
   }, [scope, forceReduced]);
-}
-
-export function animateProjectDetail(dialog, forceReduced = false) {
-  if (forceReduced) return () => {};
-  const media = gsap.matchMedia();
-  media.add('(prefers-reduced-motion: no-preference)', () => {
-    const context = gsap.context(() => {
-      const cover = dialog.querySelector('.project-detail__cover');
-      const image = cover?.querySelector('img');
-      const title = dialog.querySelector('#project-detail-title');
-      gsap.timeline({ defaults: { ease: 'power4.out' } })
-        .fromTo(dialog, { y: 55, scale: .94 }, { y: 0, scale: 1, duration: 1.1, clearProps: 'transform' }, 0)
-        .fromTo(cover, { clipPath: closedClip }, { clipPath: fullClip, duration: 1.4, clearProps: 'clipPath' }, .12)
-        .fromTo(image, { scale: 1.17 }, { scale: 1, duration: 1.65, clearProps: 'transform' }, .12)
-        .fromTo(title, { y: 38, clipPath: closedClip }, { y: 0, clipPath: fullClip, duration: 1.25, clearProps: 'transform,clipPath' }, .24);
-    }, dialog);
-    return () => context.revert();
-  });
-  return () => media.revert();
 }

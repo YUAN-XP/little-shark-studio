@@ -13,3 +13,13 @@ dist/
 *.blend
 *.blend1
 *.bak
+
+# The user-supplied surfboard and its derivatives are local preview only.
+/public/media/about/local-only/
+/qa/beach-model-candidates.html
+
+# Full-resolution material verification; local only.
+/qa/ocean-proof/
+
+# Original full-resolution ocean proof; the web cache preserves its samples.
+/public/media/about/ocean-native-v2/

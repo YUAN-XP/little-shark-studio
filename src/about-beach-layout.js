@@ -16,9 +16,11 @@ export function getRingFrame(width, height) {
 export function getBeachPose(key, progress, width, height) {
   const aspect = Math.max(.25, width / Math.max(1, height));
   const tan = Math.tan(BEACH_ART.fov * Math.PI / 360);
-  const homeDistance = Math.max(BEACH_ART.distance, 5.6 / (tan * aspect));
-  const homeY = homeDistance * 2 * tan * .34;
-  if (!key || progress <= 0) return { position: [0, homeY, homeDistance], target: [0, homeY, 0], angle: 0 };
+  // Leave lateral room for the permanent hand-lettered interaction cues.
+  const homeDistance = Math.max(BEACH_ART.distance, (width < 640 ? 9 : width < 1000 ? 7 : 5.6) / (tan * aspect));
+  const homeY = homeDistance * 2 * tan * (width < 640 ? .20 : .34);
+  const homeLift = width < 640 ? homeDistance*.07 : 0;
+  if (!key || progress <= 0) return { position: [0, homeY+homeLift, homeDistance], target: [0, homeY, 0], angle: 0 };
   const item = BEACH_OBJECTS[key];
   const board = key === 'studio-name';
   const desired = board
@@ -38,8 +40,29 @@ export function getBeachPose(key, progress, width, height) {
   const pivot = target.map(value => value * t);
   pivot[1] += homeY * (1-t);
   return {
-    position: [pivot[0] + Math.sin(angle) * radius, pivot[1], pivot[2] + Math.cos(angle) * radius],
+    position: [pivot[0] + Math.sin(angle) * radius, pivot[1]+homeLift*(1-t), pivot[2] + Math.cos(angle) * radius],
     target: pivot,
     angle,
   };
+}
+
+export function getBeachLabelLayout(bounds, width, height) {
+  const narrow = width < 640, padding = narrow ? 13 : 28;
+  const labels = {};
+  for (const [id, box] of Object.entries(bounds)) {
+    const leftSide = id === 'website';
+    const available = leftSide ? box.left-padding-12 : width-padding-(box.left+box.width)-12;
+    const labelWidth = clamp(available, narrow ? 54 : 92, narrow ? 94 : 230);
+    const left = leftSide ? Math.max(padding,box.left-labelWidth-16) : Math.min(width-padding-labelWidth,box.left+box.width+16);
+    const fontSize = clamp(labelWidth/(leftSide ? 4.3 : 5.1),narrow ? 18 : 23,leftSide ? 39 : 43);
+    const top = clamp(box.top+box.height*(leftSide ? .30 : .45)-fontSize*.7,100,height-125);
+    const start = [left+labelWidth*(leftSide ? .82 : .18),top+fontSize*(leftSide ? 1.55 : 2.8)];
+    const end = [leftSide ? box.left+box.width*.23 : box.left+box.width*.75,box.top+box.height*.56];
+    const bend = [start[0]+(leftSide ? 1 : -1)*clamp(Math.abs(end[0]-start[0])*.65,18,70),start[1]+26];
+    const angle = Math.atan2(end[1]-bend[1],end[0]-bend[0]);
+    const tip = sign => [end[0]-12*Math.cos(angle+sign*.49),end[1]-12*Math.sin(angle+sign*.49)];
+    labels[id] = { left,top,width:labelWidth,fontSize,
+      arrow:`M ${start} Q ${bend} ${end} M ${tip(-1)} L ${end} L ${tip(1)}` };
+  }
+  return labels;
 }

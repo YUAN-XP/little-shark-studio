@@ -6,7 +6,7 @@ import {useGLTF,useTexture,Environment,Lightformer} from '@react-three/drei';
 import {BallCollider,CuboidCollider,Physics,RigidBody,useRopeJoint,useSphericalJoint,useRapier} from '@react-three/rapier';
 import {MeshLineGeometry,MeshLineMaterial} from 'meshline';
 import * as THREE from 'three';
-import cardGLB from './assets/lanyard/card.glb';
+import cardGLB from './assets/lanyard/hardware.glb';
 import lanyard from './assets/lanyard/lanyard.png';
 import sharkBand from './assets/lanyard/shark-band.svg';
 import {poseToCss,pointerToCardPlane} from './lanyard-layout.js';

@@ -1,0 +1,67 @@
+@property --mailbox-hinge { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+.contact-mailbox-wrap { width: 100%; max-width: 440px; justify-self: end; position: relative; }
+.contact-mailbox { display: block; position: relative; width: 100%; aspect-ratio: 440 / 480; padding: 0; border: 0; border-radius: 30px; background: transparent; color: #f0f2df; text-align: center; isolation: isolate; }
+.contact-mailbox:focus-visible { outline: 2px dashed #ffe5a0; outline-offset: 2px; }
+.contact-mailbox__scene { display: block; position: absolute; inset: 0; }
+.contact-mailbox__model { display: block; position: absolute; top: 0; left: 0; width: 100%; aspect-ratio: 440 / 480; }
+.contact-mailbox__drawing { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.contact-mailbox__title { position: absolute; left: 66%; top: 14%; font: 500 clamp(43px, 4.2vw, 60px)/1 Caveat, cursive; color: #ffe5a0; transform: rotate(-9deg); }
+.contact-mailbox__door { --mailbox-hinge: 0deg; position: absolute; left: 22.72%; top: 39.8%; width: 25%; height: 32.7%; transform-origin: 50% 100%; transform: matrix(1, 0, calc(.736 * sin(var(--mailbox-hinge))), calc(cos(var(--mailbox-hinge)) - .323 * sin(var(--mailbox-hinge))), 0, 0); transition: --mailbox-hinge .72s .2s cubic-bezier(.3,.75,.23,1); z-index: 3; }
+.contact-mailbox__door svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.contact-mailbox__flag { transform-origin: 305px 235px; transition: transform .7s cubic-bezier(.3,.8,.2,1); }
+.contact-mailbox__envelope { position: absolute; width: 21%; left: 26%; top: 52%; opacity: 0; z-index: 2; transform: translate(0, 0) rotate(6deg) scale(.7); transition: transform .8s cubic-bezier(.2,.8,.3,1), opacity .18s .05s; }
+.contact-mailbox__envelope--two { width: 17%; left: 29%; top: 51%; transition-delay: .04s, 0s; }
+.contact-mailbox__letter { position: absolute; left: -16%; top: -4%; width: 78%; padding: 19px 10px 13px; border: 5px solid transparent; border-image: repeating-linear-gradient(125deg,#cb8069 0 10px,#f6efda 10px 20px,#608d96 20px 30px,#f6efda 30px 40px) 5; background: #f6efda; color: #183f52; box-shadow: 3px 7px 0 rgba(10,43,61,.18); opacity: 0; transform-origin: 40% 100%; transform: translate(65%, 230%) rotate(12deg) scale(.23); transition: opacity .18s, transform .9s cubic-bezier(.2,.78,.25,1); z-index: 4; }
+.contact-mailbox__address { display: block; position: relative; z-index: 1; white-space: nowrap; font: 700 clamp(20px, 2.1vw, 28px)/1.35 Caveat, "Microsoft YaHei", sans-serif; letter-spacing: .015em; }
+.contact-mailbox__letter-hint { display: block; margin-top: 5px; font-size: 11px; letter-spacing: .18em; color: #567676; }
+.contact-mailbox__stamp { position: absolute; right: 5px; top: 3px; width: 26px; opacity: .45; }
+.contact-mailbox__rays { opacity: 0; transform-origin: 53% 54%; transform: scale(.8); transition: opacity .3s, transform .5s; }
+.contact-mailbox__hint { display: grid; place-items: center; position: absolute; bottom: 3%; left: 0; width: 50%; height: 44px; color: #ecedd7; }
+.contact-mailbox__click-mouse { transition: opacity .2s; }
+.contact-mailbox__click-mouse::before { content: ''; position: absolute; top: 0; left: 0; width: 50%; height: 46%; border-radius: 14px 0 0 0; background: currentColor; opacity: 0; animation: mailbox-mouse-click 2.2s ease infinite; }
+.contact-mailbox .contact-mailbox__click-mouse i { animation: mailbox-click-wheel 2.2s ease infinite; }
+.contact-mailbox__hint svg { position: absolute; left: 50%; top: 50%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transform: translate(-50%,-50%); }
+.contact-mailbox__click-rays { width: 50px; height: 54px; opacity: 0; animation: mailbox-click-rays 2.2s ease infinite; }
+.contact-mailbox__copy-check { width: 32px; height: 32px; opacity: 0; transition: opacity .2s; }
+.contact-mailbox--copied .contact-mailbox__click-mouse, .contact-mailbox--copied .contact-mailbox__click-rays { opacity: 0; animation: none; }
+.contact-mailbox--copied .contact-mailbox__copy-check { opacity: 1; }
+@keyframes mailbox-mouse-click { 0%,20%,55%,100% { opacity: 0; } 30%,40% { opacity: .5; } }
+@keyframes mailbox-click-wheel { 0%,20%,55%,100% { transform: translateY(0); opacity: .7; } 30%,40% { transform: translateY(2px); opacity: 1; } }
+@keyframes mailbox-click-rays { 0%,25%,55%,100% { opacity: 0; } 35%,42% { opacity: 1; } }
+.contact-mailbox-status { position: absolute; top: 100%; left: -3%; width: 56%; margin-top: 7px; color: #ffe5a0; text-align: center; font-size: 12px; line-height: 1.8; }
+.contact-mailbox-status--error { font-size: 11px; }
+
+/* Interpolate the hinge angle, not the resulting matrices. Matrix decomposition
+   can reverse the opening path when the projected vertical axis changes sign. */
+.contact-mailbox:is(:hover,:focus-visible,.contact-mailbox--copied) .contact-mailbox__door { --mailbox-hinge: 90deg; transition-delay: 0s; }
+.contact-mailbox:is(:hover,:focus-visible,.contact-mailbox--copied) .contact-mailbox__flag { transform: rotate(-18deg); }
+.contact-mailbox:is(:hover,:focus-visible,.contact-mailbox--copied) .contact-mailbox__envelope--one { opacity: 1; transform: translate(-170%, -155%) rotate(-18deg) scale(1); transition-delay: .22s, .22s; }
+.contact-mailbox:is(:hover,:focus-visible,.contact-mailbox--copied) .contact-mailbox__envelope--two { opacity: 1; transform: translate(-23%, -255%) rotate(10deg) scale(1); transition-delay: .34s, .34s; }
+.contact-mailbox:is(:hover,:focus-visible,.contact-mailbox--copied) .contact-mailbox__letter { opacity: 1; transform: translate(0, 0) rotate(-7deg) scale(1); transition-delay: .3s, .25s; }
+.contact-mailbox:is(:hover,:focus-visible,.contact-mailbox--copied) .contact-mailbox__rays { opacity: 1; transform: scale(1); transition-delay: .3s; }
+.contact-mailbox--copied .contact-mailbox__letter { background-color: #faf3d9; }
+.contact-mailbox--reduced *, .contact-mailbox--reduced *::before, .contact-mailbox--reduced *::after { transition: none !important; animation: none !important; }
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .contact-mailbox__title { font-size: 39px; left: 67%; }
+  .contact-mailbox__address { font-size: 22px; letter-spacing: 0; }
+  .contact-mailbox__letter { left: -20%; top: -10%; width: 82%; padding-inline: 4px; }
+  .contact-mailbox__stamp { width: 21px; }
+}
+@media (max-width: 640px) {
+  .contact-mailbox-wrap { width: min(100%, 380px); justify-self: center; }
+  .contact-mailbox { aspect-ratio: 440 / 640; }
+  .contact-mailbox__model { top: 26%; }
+  .contact-mailbox__title { left: 63%; top: 37%; font-size: 47px; }
+  .contact-mailbox__address { font-size: clamp(20px, 6.4vw, 25px); }
+  .contact-mailbox__letter { top: 1%; left: 4%; width: 92%; padding-block: 16px 12px; }
+  .contact-mailbox__envelope { top: 65%; }
+  .contact-mailbox__envelope--two { top: 65%; }
+  .contact-mailbox:is(:hover,:focus-visible,.contact-mailbox--copied) .contact-mailbox__envelope--one { transform: translate(-124%, -375%) rotate(-18deg) scale(1); }
+  .contact-mailbox:is(:hover,:focus-visible,.contact-mailbox--copied) .contact-mailbox__envelope--two { transform: translate(-10%, -450%) rotate(10deg) scale(1); }
+  .contact-mailbox__hint { bottom: 3%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .contact-mailbox *, .contact-mailbox *::before, .contact-mailbox *::after { transition: none !important; animation: none !important; }
+}

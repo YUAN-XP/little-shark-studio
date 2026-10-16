@@ -11,12 +11,12 @@ function Arrow({ direction }) {
   return <span aria-hidden="true">{direction > 0 ? '>' : '<'}</span>;
 }
 
-export default function ProjectGallery({ items, onSelect, reducedMotion = false }) {
+export default function ProjectGallery({ items, onSelect, reducedMotion = false, suspended = false, onPrepare }) {
   const [start, setStart] = useState(0);
   const [active, setActive] = useState(2);
   const [vertical, setVertical] = useState(false);
   const [ghost, setGhost] = useState(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false), [prepared, setPrepared] = useState(false);
   const root = useRef(null), rail = useRef(null), tween = useRef(null);
   const activeRef = useRef(active), busyRef = useRef(false), arrowPreview = useRef(null);
   const mounted = useRef(false), request = useRef(0);
@@ -32,9 +32,16 @@ export default function ProjectGallery({ items, onSelect, reducedMotion = false 
     if (!busyRef.current) onSelect(item, panel);
   }, [onSelect]);
   useEffect(() => {
-    // Warm every cover early, including items outside the five visible slots.
-    items.forEach(item => prepareGalleryImage(item.image));
-  }, [items]);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setPrepared(true);
+      items.forEach(item => prepareGalleryImage(item.image));
+      Promise.resolve(onPrepare?.()).catch(() => {});
+      observer.disconnect();
+    }, { rootMargin: '300px' });
+    if (root.current) observer.observe(root.current);
+    return () => observer.disconnect();
+  }, [items, onPrepare]);
   useEffect(() => {
     mounted.current = true;
     const measure = () => setVertical(root.current?.clientWidth < 600);
@@ -119,7 +126,7 @@ export default function ProjectGallery({ items, onSelect, reducedMotion = false 
     transform: vertical || ghost.active ? 'none' : `rotateY(${ghost.direction > 0 ? -20 : 20}deg)`,
   } : undefined;
   return <div className="project-gallery-composition">
-    <GalleryCompanion galleryRef={root} activeProjectId={visible[active]?.id} layoutKey={start}
+    <GalleryCompanion enabled={prepared} suspended={suspended} galleryRef={root} activeProjectId={visible[active]?.id} layoutKey={start}
       moving={busy} reducedMotion={reducedMotion} />
     <div ref={root} className={`project-gallery ${vertical ? 'project-gallery--vertical' : ''}`}
     style={{ '--ag-accent': '#ffd75c', '--ag-overlay': '#000000', '--ag-radius': '22px' }}>
@@ -135,7 +142,7 @@ export default function ProjectGallery({ items, onSelect, reducedMotion = false 
     </button>)}
     <div className="gallery-viewport">
       <div ref={rail} className="gallery-rail" aria-busy={busy}>
-        <AccordionGallery items={visible} defaultIndex={2} expandRatio={.52} trigger="hover"
+        <AccordionGallery imagesEnabled={prepared} items={visible} defaultIndex={2} expandRatio={.52} trigger="hover"
           accentColor="#ffd75c" overlayColor="#000000" grayscale height={460} gap={12} radius={22}
           tilt={20} orientation={vertical ? 'vertical' : 'horizontal'} activeIndex={active}
           onActiveChange={changeActive} onSelect={selectProject} interactionDisabled={busy}

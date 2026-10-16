@@ -51,3 +51,43 @@ test('sculpted sand has relief and all textures remain embedded in the local GLB
  assert.ok(gltf.images.length>0);assert.ok(gltf.images.every(i=>i.bufferView!==undefined&&!i.uri));
  assert.ok(file.byteLength<4_000_000,'keep the lazy-loaded model below 4 MB');
 });
+
+const islandFile=fs.readFileSync(new URL('../public/media/about/s1-island-beach-v1.glb',import.meta.url));
+const islandJSONLength=islandFile.readUInt32LE(12);
+const islandGLTF=JSON.parse(islandFile.subarray(20,20+islandJSONLength).toString());
+const islandBinary=islandFile.subarray(28+islandJSONLength);
+const islandMatrices=new Map();
+function islandWalk(i,parent=new Matrix4()){
+ const n=islandGLTF.nodes[i],m=n.matrix?new Matrix4().fromArray(n.matrix):new Matrix4().compose(new Vector3().fromArray(n.translation||[0,0,0]),new Quaternion().fromArray(n.rotation||[0,0,0,1]),new Vector3().fromArray(n.scale||[1,1,1]));
+ m.premultiply(parent);islandMatrices.set(i,m);for(const child of n.children||[])islandWalk(child,m);
+}
+for(const i of islandGLTF.scenes[islandGLTF.scene||0].nodes)islandWalk(i);
+const sandIndex=islandGLTF.nodes.findIndex(n=>n.name==='Beach_Terrain');
+const sandPrimitive=islandGLTF.meshes[islandGLTF.nodes[sandIndex].mesh].primitives[0];
+const sandAccessor=islandGLTF.accessors[sandPrimitive.attributes.POSITION];
+const sandView=islandGLTF.bufferViews[sandAccessor.bufferView];
+const islandSand=[];
+for(let i=0;i<sandAccessor.count;i++){
+ const offset=(sandView.byteOffset||0)+(sandAccessor.byteOffset||0)+i*(sandView.byteStride||12);
+ islandSand.push(new Vector3(islandBinary.readFloatLE(offset),islandBinary.readFloatLE(offset+4),islandBinary.readFloatLE(offset+8)).applyMatrix4(islandMatrices.get(sandIndex)));
+}
+test('the integrated S1 island contains the reviewed furniture and no second sea or duplicate interaction props',()=>{
+ const names=islandGLTF.nodes.map(n=>n.name||'');
+ assert.ok(names.some(n=>n.startsWith('S1_Umbrella_')));
+ assert.ok(names.some(n=>n.startsWith('S1_SunLonuger.002_')));
+ assert.ok(names.some(n=>n.startsWith('S1_SandCastle_')));
+ assert.ok(!names.some(n=>/^(?:Water_|Rocks_|Tabla_|Swimming Ring_)/.test(n)));
+ assert.ok(islandGLTF.images.length>10&&islandGLTF.images.every(i=>Number.isInteger(i.bufferView)&&!i.uri));
+ for(const texture of islandGLTF.textures)assert.ok(islandGLTF.images[texture.source]);
+ assert.ok(islandFile.byteLength<16_000_000);
+});
+test('both retained props penetrate the new S1 sand and the outer island slopes below the sea',()=>{
+ for(const name of ['Ring_InflatedBody','Board_SculptedDeckAndRails']){
+  const foot=points(name).reduce((a,b)=>a.y<b.y?a:b);
+  const patch=islandSand.filter(p=>Math.hypot(p.x-foot.x,p.z-foot.z)<.55);
+  assert.ok(patch.length>=2);
+  assert.ok(patch.reduce((s,p)=>s+p.y,0)/patch.length-foot.y>.12,name+' must remain embedded in the new terrain');
+ }
+ const coast=islandSand.filter(p=>Math.hypot(p.x/21,p.z/18)>1.04);
+ assert.ok(coast.length>100&&coast.every(p=>p.y< -2.8));
+});

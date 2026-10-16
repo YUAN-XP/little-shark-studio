@@ -1,0 +1,132 @@
+{
+  "source": "D:\\个人简介网站\\blender_project\\stylized_tropical_beach_diorama.glb",
+  "output": "C:\\Users\\31975\\.codex\\.chatgpt-projects\\g-p-6a952c7872588191b5d225f32558d882\\.beach-model-revision-2026-10-15\\sand-export\\s1-island-beach-v1.glb",
+  "bytes": 12251144,
+  "objects": [
+    {
+      "name": "Beach_Terrain",
+      "vertices": 9408,
+      "polygons": 9216
+    },
+    {
+      "name": "S1_CoolBox_Coolbox_0",
+      "vertices": 2630,
+      "polygons": 3814
+    },
+    {
+      "name": "S1_CoolBox_icecube_0",
+      "vertices": 6912,
+      "polygons": 3168
+    },
+    {
+      "name": "S1_CoolBox_Glass_0",
+      "vertices": 7401,
+      "polygons": 8038
+    },
+    {
+      "name": "S1_CoolBox_CoronaLogo_0",
+      "vertices": 210,
+      "polygons": 180
+    },
+    {
+      "name": "S1_CoolBox_CoronaBottletap_0",
+      "vertices": 8197,
+      "polygons": 7786
+    },
+    {
+      "name": "S1_CoolBox_Beer_0",
+      "vertices": 4276,
+      "polygons": 5133
+    },
+    {
+      "name": "S1_Grass_Grass_0",
+      "vertices": 17346,
+      "polygons": 13762
+    },
+    {
+      "name": "S1_Grass_Grasswithd_0",
+      "vertices": 5841,
+      "polygons": 4994
+    },
+    {
+      "name": "S1_Magazine_Color_000_0",
+      "vertices": 146,
+      "polygons": 118
+    },
+    {
+      "name": "S1_Magazine_M_83483138588587_5767f7af416f2_0",
+      "vertices": 42,
+      "polygons": 36
+    },
+    {
+      "name": "S1_Plant_Plant1_0",
+      "vertices": 4638,
+      "polygons": 3225
+    },
+    {
+      "name": "S1_SandCastle_Material.002_0",
+      "vertices": 12174,
+      "polygons": 7683
+    },
+    {
+      "name": "S1_Shell_BB_13_001_0",
+      "vertices": 4080,
+      "polygons": 7487
+    },
+    {
+      "name": "S1_SunLonuger.002_SunLonuger_0",
+      "vertices": 9166,
+      "polygons": 10122
+    },
+    {
+      "name": "S1_SunLonuger.002_lounger cushion edge2_0",
+      "vertices": 2803,
+      "polygons": 3562
+    },
+    {
+      "name": "S1_SunLonuger.002_lounger cushion 2_0",
+      "vertices": 1342,
+      "polygons": 2240
+    },
+    {
+      "name": "S1_SunLonuger.002_lounger cushion edge1_0",
+      "vertices": 4877,
+      "polygons": 6219
+    },
+    {
+      "name": "S1_SunLonuger.002_lounger cushion1_0",
+      "vertices": 2332,
+      "polygons": 4024
+    },
+    {
+      "name": "S1_SunScreen_Sunscreen_0",
+      "vertices": 1019,
+      "polygons": 1536
+    },
+    {
+      "name": "S1_Umbrella_UmbrellaMain_0",
+      "vertices": 1062,
+      "polygons": 1494
+    },
+    {
+      "name": "S1_Umbrella_UmbrellaCloth_0",
+      "vertices": 3137,
+      "polygons": 5280
+    },
+    {
+      "name": "S1_Umbrella_UmbrellaSide_0",
+      "vertices": 3640,
+      "polygons": 5004
+    },
+    {
+      "name": "S1_flipflops_blinn1SG_0",
+      "vertices": 3291,
+      "polygons": 6171
+    }
+  ],
+  "source_url": "https://sketchfab.com/3d-models/stylized-tropical-beach-diorama-3c41f170b992430693b2a17d3deecf34",
+  "author": "Visthétique",
+  "license": "CC BY 4.0",
+  "changes": "Radial raised island made from sampled source sand; water and duplicate interactive props removed; retained and optimized beach furniture.",
+  "interactive_poses": "Existing ring and board positions/orientations are unchanged."
+}

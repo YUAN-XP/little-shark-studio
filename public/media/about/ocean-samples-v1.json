@@ -1,0 +1,60 @@
+{
+  "format": "blender-ocean-quant16-v1",
+  "source": "海面.blend",
+  "grid": 82,
+  "frameCount": 49,
+  "sourceFrameRange": [
+    0,
+    400
+  ],
+  "sourceFps": 24.0,
+  "loopSeconds": 16.666666666666668,
+  "spatialSize": 50,
+  "sourceResolution": 15,
+  "webResolution": 9,
+  "channels": [
+    "displacementX",
+    "displacementY",
+    "height",
+    "foam"
+  ],
+  "minimum": [
+    -1.8566150665283203,
+    -4.264962196350098,
+    -5.275943756103516,
+    0.0
+  ],
+  "range": [
+    3.7132301330566406,
+    8.529923439025879,
+    9.591512680053711,
+    1.0
+  ],
+  "sampleFile": "ocean-samples-v1.bin",
+  "paletteLinear": {
+    "ocean": [
+      0.0395713188,
+      0.362882913,
+      1
+    ],
+    "foam": [
+      0.388783127,
+      0.954993367,
+      1
+    ],
+    "sunlight": [
+      1,
+      0.861223102,
+      0.20739235
+    ],
+    "sunset": [
+      1,
+      0.240723878,
+      0
+    ]
+  },
+  "sourceFoamThreshold": 0.142487079,
+  "loopMaximumDifference": 0.0,
+  "firstUV": null,
+  "animation": "Sampled from the original Ocean modifier and its original timeline; interpolated in the browser."
+}

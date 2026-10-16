@@ -1,59 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { Component, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { profile, projects, studioNotes } from "./content.js";
 import { PalmForeground, BEACH_SCENE } from "./PalmForeground.jsx";
 import ProjectGallery from "./ProjectGallery.jsx";
-import ProjectDetail from "./ProjectDetail.jsx";
 import { MotionWords } from "./Motion.jsx";
-import GlassSurface from "./GlassSurface.jsx";
+import FloatingNavigation from "./FloatingNavigation.jsx";
 import MeSectionContent from "./MeSectionContent.jsx";
 import AboutBeach from "./AboutBeach.jsx";
+import ContactMailbox from "./ContactMailbox.jsx";
 import { usePortfolioMotion } from "./usePortfolioMotion.js";
 import { nextIslandState } from "./header-state.js";
 import "./motion.css";
 
-function Icon({ name, size = 24 }) {
-  const paths = {
-    spark: <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M5.6 18.4 18.4 5.6" />,
-    mail: (
-      <>
-        <rect x="3" y="5" width="18" height="14" rx="3" />
-        <path d="m3 7 9 6 9-6" />
-      </>
-    ),
-    plus: <path d="M12 5v14M5 12h14" />,
-    close: <path d="m6 6 12 12M6 18 18 6" />,
-    copy: (
-      <>
-        <rect x="8" y="8" width="12" height="12" rx="2" />
-        <path d="M16 8V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h4" />
-      </>
-    ),
-    menu: <path d="M4 7h16M4 12h16M4 17h16" />,
-    data: <path d="M4 20V4M4 20h17M9 16v-5M14 16V6M19 16v-8" />,
-    code: <path d="m7 7-5 5 5 5m10-10 5 5-5 5m-3-14-4 18" />,
-    team: (
-      <>
-        <circle cx="9" cy="8" r="3" />
-        <path d="M3 20v-2a6 6 0 0 1 12 0v2m2-15a3 3 0 0 1 0 6m2 4a5 5 0 0 1 2 4v1" />
-      </>
-    ),
-  };
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {paths[name] || paths.spark}
-    </svg>
-  );
+const prepareProjectDetails = () => import("./ProjectDetailLoader.jsx");
+const ProjectDetail = lazy(prepareProjectDetails);
+class ProjectDetailsBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    return this.state.failed ? <div className="project-load-error" role="alert">
+      <p>暂时无法打开项目，请刷新后重试。</p>
+      <button type="button" onClick={this.props.onClose}>返回项目集</button>
+      <button type="button" onClick={() => window.location.reload()}>刷新重试</button>
+    </div> : this.props.children;
+  }
 }
+
 const Doodle = ({ className = "", variant = "star" }) => (
   <img
     className={`doodle doodle-${variant} ${className}`}
@@ -80,24 +51,39 @@ export default function App({ motionPreference = "system" } = {}) {
     [active, setActive] = useState("home"),
     [menuOpen, setMenuOpen] = useState(false),
     [preview, setPreview] = useState(null),
-    [message, setMessage] = useState("");
+    [surfaceTone, setSurfaceTone] = useState("light"),
+    [heroVideoEnabled, setHeroVideoEnabled] = useState(false),
+    [posterReady, setPosterReady] = useState(false);
   const [paused, setPaused] = useState(
     () => motionPreference === "reduced" || window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   const [sceneVisible, setSceneVisible] = useState(true);
+  const backgroundSuspended = Boolean(preview);
   const motionScope = useRef(null), previewOrigin = useRef(null);
   usePortfolioMotion(motionScope, motionPreference === "reduced");
   const video = useRef(null),
-    hero = useRef(null),
-    messageTimer = useRef(null);
+    hero = useRef(null);
   useEffect(() => {
     let headerFrame = 0;
+    const readingSections = [...document.querySelectorAll('main > section[id]')];
     const update = () => {
       if (headerFrame) return;
       headerFrame = requestAnimationFrame(() => {
         headerFrame = 0;
         const bottom = hero.current?.getBoundingClientRect().bottom ?? Infinity;
         setScrolled(current => nextIslandState(current, bottom));
+        const readingLine = window.innerHeight * .32;
+        let sectionId = 'home';
+        let contactRect;
+        for (const section of readingSections) {
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= readingLine) sectionId = section.id;
+          if (section.id === 'contact') contactRect = rect;
+        }
+        setActive(sectionId);
+        const glass = document.querySelector('.nav-island-glass')?.getBoundingClientRect();
+        const center = glass ? glass.top + glass.height / 2 : 0;
+        setSurfaceTone(contactRect && contactRect.top <= center && contactRect.bottom >= center ? 'dark' : 'light');
       });
     };
     const fitScene = () => {
@@ -132,107 +118,59 @@ export default function App({ motionPreference = "system" } = {}) {
     if (hero.current) sceneVisibility.observe(hero.current);
     update();
     window.addEventListener("scroll", update, { passive: true });
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries)
-          if (entry.isIntersecting) setActive(entry.target.id);
-      },
-      { rootMargin: "-18% 0px -55% 0px", threshold: 0 },
-    );
-    document
-      .querySelectorAll("main > section[id]")
-      .forEach((el) => observer.observe(el));
+    window.addEventListener("resize", update);
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const onPreference = (e) => setPaused(motionPreference === "reduced" || e.matches);
     preference.addEventListener("change", onPreference);
     return () => {
       window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
       cancelAnimationFrame(headerFrame);
-      observer.disconnect();
       sceneObserver.disconnect();
       sceneVisibility.disconnect();
       preference.removeEventListener("change", onPreference);
-      clearTimeout(messageTimer.current);
     };
   }, [motionPreference]);
   useEffect(() => {
+    if (!posterReady || heroVideoEnabled || paused || !sceneVisible || backgroundSuspended) return;
+    let task = null;
+    const cancel = () => {
+      if (task === null) return;
+      if (window.requestIdleCallback) window.cancelIdleCallback(task);
+      else cancelAnimationFrame(task);
+      task = null;
+    };
+    const schedule = () => {
+      cancel();
+      const rect = hero.current?.getBoundingClientRect();
+      if (document.hidden || !rect || rect.bottom <= 0 || rect.top >= window.innerHeight) return;
+      const enable = () => { task = null; if (!document.hidden) setHeroVideoEnabled(true); };
+      task = window.requestIdleCallback ? window.requestIdleCallback(enable, { timeout: 800 }) : requestAnimationFrame(enable);
+    };
+    schedule();
+    document.addEventListener("visibilitychange", schedule);
+    return () => { cancel(); document.removeEventListener("visibilitychange", schedule); };
+  }, [posterReady, heroVideoEnabled, paused, sceneVisible, backgroundSuspended]);
+  useEffect(() => {
     if (!video.current) return;
     const syncPlayback = () => {
-      if (paused || !sceneVisible || document.hidden) video.current.pause();
+      if (!heroVideoEnabled || paused || backgroundSuspended || !sceneVisible || document.hidden) video.current.pause();
       else video.current.play().catch(error => { if (error.name !== "AbortError") setPaused(true); });
     };
     syncPlayback();
     document.addEventListener("visibilitychange", syncPlayback);
     return () => document.removeEventListener("visibilitychange", syncPlayback);
-  }, [paused, sceneVisible]);
-  const copyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(profile.email);
-      setMessage("邮箱已复制，期待与你交流。");
-    } catch {
-      setMessage(`请复制邮箱：${profile.email}`);
-    }
-    clearTimeout(messageTimer.current);
-    messageTimer.current = setTimeout(() => setMessage(""), 5000);
-  };
+  }, [paused, sceneVisible, heroVideoEnabled, backgroundSuspended]);
   return (
-    <div className="site-shell" ref={motionScope}>
+    <div className="site-shell" ref={motionScope} data-background-paused={backgroundSuspended || undefined}>
       <a className="skip-link" href="#me">
         跳至个人介绍
       </a>
-      <header
-        className={`header ${scrolled ? "header-scrolled" : ""}`}
-        data-page={active}
-        onKeyDown={(e) => { if (e.key === "Escape") setMenuOpen(false); }}
-      >
-        <div className="header-frame">
-          <GlassSurface
-            width="100%" height="auto" borderRadius={999}
-            className="nav-island-glass"
-            displace={15} distortionScale={-150}
-            redOffset={5} greenOffset={15} blueOffset={25}
-            brightness={60} opacity={0.8} mixBlendMode="screen"
-            backgroundOpacity={0.16} saturation={1.4}
-          >
-          <div className="header-inner page-width">
-          <a href="#home" className="brand" aria-label="Little Shark Studio，回到首页">
-            <img className="brand-logo" src={profile.logo} alt="" width="48" height="48" />
-          </a>
-          <button
-            className="mobile-menu icon-button"
-            aria-label={menuOpen ? "关闭导航" : "打开导航"}
-            aria-expanded={menuOpen}
-            aria-controls="main-navigation"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <Icon name={menuOpen ? "close" : "menu"} />
-          </button>
-          <nav
-            id="main-navigation"
-            className={`navigation ${menuOpen ? "navigation-open" : ""}`}
-            aria-label="主导航"
-          >
-            {[
-              ["me", "我"],
-              ["work", "项目集"],
-              ["about", "关于"],
-              ["contact", "联系"],
-            ].map(([id, text]) => (
-              <a
-                key={id}
-                href={`#${id}`}
-                className={active === id ? "nav-active" : ""}
-                aria-current={active === id ? "location" : undefined}
-                onClick={() => setMenuOpen(false)}
-              >
-                {text}
-              </a>
-            ))}
-          </nav>
-          </div>
-          </GlassSurface>
-        </div>
-      </header>
+      <FloatingNavigation
+        scrolled={scrolled} active={active} logo={profile.logo} surfaceTone={surfaceTone}
+        menuOpen={menuOpen} onMenuToggle={() => setMenuOpen(open => !open)}
+        onMenuClose={() => setMenuOpen(false)} reducedMotion={paused}
+      />
       <main style={{ "--scene-background": `url("${profile.heroPoster}")` }}>
         <section
           ref={hero}
@@ -246,12 +184,14 @@ export default function App({ motionPreference = "system" } = {}) {
               src={profile.heroPoster}
               alt=""
               fetchPriority="high"
+              onLoad={() => setPosterReady(true)}
             />
             <video
               key={profile.heroVideo}
               ref={video}
               className="hero-video"
-              autoPlay={!paused}
+              src={heroVideoEnabled ? profile.heroVideo : undefined}
+              autoPlay={heroVideoEnabled && !paused}
               muted
               loop
               playsInline
@@ -259,7 +199,6 @@ export default function App({ motionPreference = "system" } = {}) {
               poster={profile.heroPoster}
               onError={() => setPaused(true)}
             >
-              <source src={profile.heroVideo} type="video/mp4" />
             </video>
           </div>
           <svg className="hero-backword" viewBox="15.625 -718.75 4487 734.375"
@@ -290,13 +229,13 @@ export default function App({ motionPreference = "system" } = {}) {
           aria-labelledby="me-title"
         >
           <ChapterMarquee title="ME" />
-          <MeSectionContent reducedMotion={motionPreference === "reduced"} />
+          <MeSectionContent reducedMotion={motionPreference === "reduced"} suspended={backgroundSuspended} />
         </section>
         <section className="work" id="work" aria-labelledby="work-title" data-motion-section>
           <ChapterMarquee title="PROJECTS" />
           <h2 className="sr-only" id="work-title">项目集</h2>
           <div className="page-width gallery-stage" data-motion-group>
-            <ProjectGallery items={projects} onSelect={(item, panel) => { previewOrigin.current = panel; setPreview(item); }} reducedMotion={motionPreference === "reduced"} />
+            <ProjectGallery suspended={backgroundSuspended} onPrepare={prepareProjectDetails} items={projects} onSelect={(item, panel) => { previewOrigin.current = panel; setPreview(item); }} reducedMotion={motionPreference === "reduced"} />
           </div>
         </section>
         <section
@@ -306,7 +245,7 @@ export default function App({ motionPreference = "system" } = {}) {
           aria-labelledby="studio-about-title"
         >
           <ChapterMarquee title="ABOUT" />
-          <AboutBeach notes={studioNotes} reducedMotion={motionPreference === "reduced"} />
+          <AboutBeach notes={studioNotes} reducedMotion={motionPreference === "reduced"} suspended={backgroundSuspended} />
         </section>
         <section
           className="contact"
@@ -315,7 +254,7 @@ export default function App({ motionPreference = "system" } = {}) {
           aria-labelledby="contact-title"
         >
           <ChapterMarquee title="CONTACT" />
-<div className="contact-content page-width">
+          <div className="contact-content page-width">
             <div className="contact-main" data-motion-group>
               <h2 id="contact-title" data-motion-heading>
                 <MotionWords text="LET'S MAKE" />
@@ -324,34 +263,7 @@ export default function App({ motionPreference = "system" } = {}) {
                 <br />
                 <MotionWords text="HAPPEN." />
               </h2>
-              <div className="contact-aside" data-motion="card">
-                <span className="handwritten">say hello!</span>
-                <Doodle />
-                <p>
-                  实习机会、研究交流，
-                  <br />
-                  或是值得一起试试的新想法。
-                  <br />
-                  欢迎来信。
-                </p>
-              </div>
-            </div>
-            <div className="contact-actions" data-motion-group>
-              <a
-                className="button button-lime"
-                href={`mailto:${profile.email}`}
-                data-motion="copy"
-              >
-                给我发邮件
-                <Icon name="mail" size={20} />
-              </a>
-              <button className="copy-button" onClick={copyEmail} data-motion="copy">
-                <Icon name="copy" size={18} />
-                复制邮箱
-              </button>
-              <a href={`mailto:${profile.email}`} className="email-link" data-motion="copy">
-                {profile.email}
-              </a>
+              <ContactMailbox email={profile.email} reducedMotion={motionPreference === "reduced"} />
             </div>
             <footer className="footer">
               <a href="#home" className="footer-brand" aria-label="Little Shark Studio，回到首页">
@@ -361,19 +273,15 @@ export default function App({ motionPreference = "system" } = {}) {
                 © 2026 · PERSONAL PORTFOLIO
                 <br />
                 KEEP CURIOUS. KEEP CREATING.
+                <a href={`${import.meta.env.BASE_URL}credits.html`} target="_blank" rel="noreferrer">制作与素材致谢</a>
               </span>
             </footer>
           </div>
         </section>
       </main>
-      <ProjectDetail project={preview} origin={previewOrigin.current} onClose={() => setPreview(null)} reducedMotion={motionPreference === "reduced"} />
-      <div
-        className={`toast ${message ? "toast-visible" : ""}`}
-        role="status"
-        aria-live="polite"
-      >
-        {message}
-      </div>
+      {preview && <ProjectDetailsBoundary onClose={() => setPreview(null)}><Suspense fallback={<span className="sr-only" role="status">正在打开项目…</span>}>
+        <ProjectDetail project={preview} origin={previewOrigin.current} onClose={() => setPreview(null)} reducedMotion={motionPreference === "reduced"} />
+      </Suspense></ProjectDetailsBoundary>}
     </div>
   );
 }

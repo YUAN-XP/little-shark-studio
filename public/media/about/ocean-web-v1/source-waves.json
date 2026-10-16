@@ -1,0 +1,94 @@
+{
+  "format": "blender-ocean-proof-quant16-v2",
+  "source": "海面.blend",
+  "sourceFrameRange": [
+    1,
+    400
+  ],
+  "sourceFps": 24.0,
+  "storedFrames": 201,
+  "foldAtFrame": 200,
+  "cycleFrames": 400,
+  "loopSeconds": 16.666666666666668,
+  "grid": 226,
+  "sourceGrid": 226,
+  "sourceResolution": 15,
+  "minimum": [
+    -1.8949031829833984,
+    -4.286689758300781,
+    -5.268008232116699,
+    0.0
+  ],
+  "range": [
+    3.789806365966797,
+    8.573379516601562,
+    9.611825942993164,
+    1.0
+  ],
+  "sampleFile": "source-waves.bin.gz",
+  "sourceLocation": [
+    -2.945340871810913,
+    3.6199424266815186,
+    3.1154072284698486
+  ],
+  "sourceSpatialSize": 50,
+  "sourceFrameChecks": [
+    {
+      "sourceFrame": 1,
+      "storedFrame": 1,
+      "maxError": 0.0
+    },
+    {
+      "sourceFrame": 49,
+      "storedFrame": 49,
+      "maxError": 0.0
+    },
+    {
+      "sourceFrame": 100,
+      "storedFrame": 100,
+      "maxError": 0.0
+    },
+    {
+      "sourceFrame": 177,
+      "storedFrame": 177,
+      "maxError": 0.0
+    },
+    {
+      "sourceFrame": 200,
+      "storedFrame": 200,
+      "maxError": 0.0
+    },
+    {
+      "sourceFrame": 239,
+      "storedFrame": 161,
+      "maxError": 0.0
+    },
+    {
+      "sourceFrame": 300,
+      "storedFrame": 100,
+      "maxError": 0.0
+    },
+    {
+      "sourceFrame": 351,
+      "storedFrame": 49,
+      "maxError": 0.0
+    },
+    {
+      "sourceFrame": 399,
+      "storedFrame": 1,
+      "maxError": 1.9073486328125e-06
+    },
+    {
+      "sourceFrame": 400,
+      "storedFrame": 0,
+      "maxError": 0.0
+    }
+  ],
+  "sampling": "Every original spatial sample and all 201 stored frames are retained; lossless temporal differences change storage only.",
+  "limitations": [],
+  "encoding": {
+    "type": "temporal-delta-channel-byteplanes-v1",
+    "order": 4
+  },
+  "sourceQuantizedSha256": "35e0eda0d9c92ed565fd31f87603157e35a7e3c5ab3008572cff69877b6110a8"
+}

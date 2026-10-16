@@ -1,6 +1,38 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { BEACH_ART, BEACH_OBJECTS, easeCamera, getBeachPose } from '../src/about-beach-layout.js';
+import { Group } from 'three';
+import { updateBeachHover } from '../src/about-beach-scene.js';
+
+test('hover enlargement and its return settle without alternating scales or moving the fixed bodies',()=>{
+  const ring=new Group(),board=new Group(),bodies={website:ring,'studio-name':board};
+  ring.position.fromArray(BEACH_OBJECTS.website.center);
+  const original=ring.position.toArray();
+  let last=1;
+  for(let frame=0;frame<90;frame++){
+    updateBeachHover(bodies,'website',null,false,1/60);
+    assert.ok(ring.scale.x>=last&&ring.scale.x<=1.026);
+    assert.equal(board.scale.x,1);last=ring.scale.x;
+  }
+  assert.equal(ring.scale.x,1.026);
+  assert.equal(updateBeachHover(bodies,'website',null,false,1/60),false,'settled props do not request repeated shadow updates');
+  for(let frame=0;frame<90;frame++){
+    updateBeachHover(bodies,null,null,false,1/60);
+    assert.ok(ring.scale.x<=last&&ring.scale.x>=1);last=ring.scale.x;
+  }
+  assert.equal(ring.scale.x,1);
+  assert.deepEqual(ring.position.toArray(),original);
+});
+
+test('a reduced-motion hover still invalidates the shadow, and focusing removes hover enlargement',()=>{
+  const bodies={website:new Group(),'studio-name':new Group()};
+  assert.equal(updateBeachHover(bodies,'website',null,true,0),true);
+  assert.equal(bodies.website.scale.x,1.026);
+  assert.equal(updateBeachHover(bodies,'website',null,true,0),false);
+  assert.equal(updateBeachHover(bodies,'website','website',true,0),true);
+  assert.equal(bodies.website.scale.x,1);
+  assert.equal(bodies['studio-name'].scale.x,1);
+});
 
 test('the two fixed objects face opposite sides in the confirmed ground plan', () => {
   assert.ok(-Math.sin(BEACH_OBJECTS.website.yaw)>0, 'ring right edge is closer');

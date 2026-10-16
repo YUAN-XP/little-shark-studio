@@ -2,11 +2,12 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { COMPANION_EYES, gazeToward } from './gallery-gaze.js';
 import './GalleryCompanion.css';
 
-const PORTRAIT = `${import.meta.env.BASE_URL}media/gallery-companion/character-v7.png`;
+const PORTRAIT = `${import.meta.env.BASE_URL}media/gallery-companion/character-v7.webp`;
 
-export default function GalleryCompanion({ galleryRef, activeProjectId, layoutKey, moving, reducedMotion = false }) {
+export default function GalleryCompanion({ galleryRef, activeProjectId, layoutKey, moving, reducedMotion = false, enabled = true, suspended = false }) {
   const root = useRef(null), eyes = useRef(null), pupils = useRef([]);
-  const wake = useRef(() => {}), forceReduced = useRef(reducedMotion);
+  const wake = useRef(() => {}), stopGaze = useRef(() => {}), forceReduced = useRef(reducedMotion), paused = useRef(suspended);
+  paused.current = suspended;
   const [imageReady, setImageReady] = useState(false);
   forceReduced.current = reducedMotion;
   const id = `companion-${useId().replaceAll(':', '')}`;
@@ -39,7 +40,7 @@ export default function GalleryCompanion({ galleryRef, activeProjectId, layoutKe
     };
     const tick = now => {
       frame = 0;
-      if (disposed || !visible || document.hidden) { stop(); return; }
+      if (disposed || !visible || document.hidden || paused.current) { stop(); return; }
       const following = now <= followUntil;
       if (following) sample();
       const delta = previousTime ? Math.min(40, now - previousTime) : 16;
@@ -60,11 +61,11 @@ export default function GalleryCompanion({ galleryRef, activeProjectId, layoutKe
       } else stop();
     };
     const follow = (duration = 850) => {
-      if (disposed) return;
+      if (disposed || paused.current) return;
       followUntil = Math.max(followUntil, performance.now() + duration);
       if (visible && !document.hidden && !frame) frame = requestAnimationFrame(tick);
     };
-    wake.current = follow;
+    wake.current = follow; stopGaze.current = stop;
     const intersection = new IntersectionObserver(entries => {
       visible = entries[0].isIntersecting;
       if (visible) follow();
@@ -93,6 +94,7 @@ export default function GalleryCompanion({ galleryRef, activeProjectId, layoutKe
     };
   }, [galleryRef, imageReady]);
 
+  useEffect(() => { if (suspended) stopGaze.current(); else wake.current(300); }, [suspended]);
   useEffect(() => { wake.current(850); }, [activeProjectId, layoutKey, moving, reducedMotion, imageReady]);
 
   return <div ref={root} className="gallery-companion" aria-hidden="true" data-gaze-state="idle">
@@ -100,7 +102,7 @@ export default function GalleryCompanion({ galleryRef, activeProjectId, layoutKe
       <path d="M1 7 C210 3 405 10 588 6 S815 7 999 5" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
     </svg>
     <div className="gallery-companion__art">
-      <img src={PORTRAIT} width="1536" height="1024" alt="" draggable="false" loading="lazy" decoding="async" onLoad={() => setImageReady(true)} />
+      <img src={enabled ? PORTRAIT : undefined} width="1536" height="1024" alt="" draggable="false" loading="lazy" decoding="async" onLoad={() => setImageReady(true)} />
       <svg ref={eyes} className="gallery-companion__eyes" viewBox="0 0 1536 1024" focusable="false">
         <defs>{COMPANION_EYES.map((eye, index) => <clipPath key={index} id={`${id}-eye-${index}`}>
           <path d={eye.outline} />

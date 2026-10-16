@@ -13,7 +13,7 @@ class StrapBoundary extends Component {
   render(){return this.state.failed?null:this.props.children;}
 }
 
-export default function HangingProfileCard({reducedMotion=false}){
+export default function HangingProfileCard({reducedMotion=false,suspended=false}){
   const hostRef=useRef(null),overlayRef=useRef(null),assemblyRef=useRef(null),frameRef=useRef(null),poseRef=useRef(null),measurement=useRef(null),enteredRef=useRef(false);
   const interaction=useRef({dragging:false,clientX:0,clientY:0,startClientX:0,startClientY:0,wake:null,render:null,kick:null,reset:0,base:null,sync:null});
   const [dimensions,setDimensions]=useState(null),[near,setNear]=useState(false),[visible,setVisible]=useState(false);
@@ -140,10 +140,10 @@ export default function HangingProfileCard({reducedMotion=false}){
   return <>
     <div className="hanging-profile" ref={hostRef}>{typeof document==='undefined'?card:null}</div>
     {typeof document!=='undefined'&&createPortal(<div className="hanging-overlay" ref={overlayRef} data-lanyard-mode={mode} data-dragging={dragging}
-      data-visible={visible||dragging} style={style} aria-hidden={!visible&&!dragging}>
+      data-suspended={suspended || undefined} data-visible={visible||dragging} style={style} aria-hidden={!visible&&!dragging}>
       <div className="hanging-assembly" ref={assemblyRef}>
       {canLoad&&<div className="profile-lanyard-canvas" aria-hidden="true"><StrapBoundary onError={handleFailure}><Suspense fallback={null}>
-        <Lanyard position={[0,0,20]} gravity={[0,-40,0]} layout={layout} active={(visible||dragging)&&pageVisible&&entered}
+        <Lanyard position={[0,0,20]} gravity={[0,-40,0]} layout={layout} active={(visible||dragging)&&pageVisible&&entered&&!suspended}
           poseRef={poseRef} interaction={interaction} onReady={setReady} onError={handleFailure}/>
       </Suspense></StrapBoundary></div>}
       <div className="hanging-portal-frame" ref={frameRef}>

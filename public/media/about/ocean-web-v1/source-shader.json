@@ -1,0 +1,406 @@
+{
+  "source": "海面.blend",
+  "sourceFrameRange": [
+    1,
+    400
+  ],
+  "sunDirection": [
+    -0.5472655892372131,
+    -3.998007258587677e-08,
+    0.8369590044021606
+  ],
+  "sunEnergy": 80.0,
+  "pointPosition": [
+    4.076245307922363,
+    1.0054539442062378,
+    5.903861999511719
+  ],
+  "sunAngle": 0.19896753132343292,
+  "pointEnergy": 1000.0,
+  "links": [
+    {
+      "from": "分离 XYZ",
+      "socket": "Z",
+      "to": "颜色渐变",
+      "inputIndex": 0
+    },
+    {
+      "from": "映射",
+      "socket": "Vector",
+      "to": "分离 XYZ",
+      "inputIndex": 0
+    },
+    {
+      "from": "颜色渐变",
+      "socket": "Color",
+      "to": "原理化 BSDF",
+      "inputIndex": 0
+    },
+    {
+      "from": "纹理坐标",
+      "socket": "Object",
+      "to": "映射",
+      "inputIndex": 0
+    },
+    {
+      "from": "原理化 BSDF",
+      "socket": "BSDF",
+      "to": "着色器 转 RGB",
+      "inputIndex": 0
+    },
+    {
+      "from": "着色器 转 RGB",
+      "socket": "Color",
+      "to": "颜色渐变.001",
+      "inputIndex": 0
+    },
+    {
+      "from": "原理化 BSDF.001",
+      "socket": "BSDF",
+      "to": "着色器 转 RGB.001",
+      "inputIndex": 0
+    },
+    {
+      "from": "着色器 转 RGB.001",
+      "socket": "Color",
+      "to": "颜色渐变.002",
+      "inputIndex": 0
+    },
+    {
+      "from": "颜色属性",
+      "socket": "Color",
+      "to": "颜色渐变.003",
+      "inputIndex": 0
+    },
+    {
+      "from": "颜色渐变.003",
+      "socket": "Color",
+      "to": "混合着色器",
+      "inputIndex": 0
+    },
+    {
+      "from": "颜色渐变.002",
+      "socket": "Color",
+      "to": "混合着色器",
+      "inputIndex": 2
+    },
+    {
+      "from": "颜色渐变.001",
+      "socket": "Color",
+      "to": "混合着色器",
+      "inputIndex": 1
+    },
+    {
+      "from": "映射.001",
+      "socket": "Vector",
+      "to": "渐变纹理",
+      "inputIndex": 0
+    },
+    {
+      "from": "纹理坐标.001",
+      "socket": "Generated",
+      "to": "映射.001",
+      "inputIndex": 0
+    },
+    {
+      "from": "渐变纹理",
+      "socket": "Color",
+      "to": "颜色渐变.004",
+      "inputIndex": 0
+    },
+    {
+      "from": "光泽 BSDF",
+      "socket": "BSDF",
+      "to": "着色器 转 RGB.002",
+      "inputIndex": 0
+    },
+    {
+      "from": "着色器 转 RGB.002",
+      "socket": "Color",
+      "to": "颜色渐变.005",
+      "inputIndex": 0
+    },
+    {
+      "from": "颜色渐变.005",
+      "socket": "Color",
+      "to": "混合",
+      "inputIndex": 6
+    },
+    {
+      "from": "混合着色器",
+      "socket": "Shader",
+      "to": "着色器 转 RGB.003",
+      "inputIndex": 0
+    },
+    {
+      "from": "着色器 转 RGB.003",
+      "socket": "Color",
+      "to": "混合.001",
+      "inputIndex": 6
+    },
+    {
+      "from": "混合",
+      "socket": "Result",
+      "to": "混合.001",
+      "inputIndex": 0
+    },
+    {
+      "from": "映射.002",
+      "socket": "Vector",
+      "to": "噪波纹理",
+      "inputIndex": 0
+    },
+    {
+      "from": "纹理坐标.002",
+      "socket": "Generated",
+      "to": "映射.002",
+      "inputIndex": 0
+    },
+    {
+      "from": "噪波纹理",
+      "socket": "Factor",
+      "to": "颜色渐变.006",
+      "inputIndex": 0
+    },
+    {
+      "from": "颜色渐变.006",
+      "socket": "Color",
+      "to": "混合.002",
+      "inputIndex": 6
+    },
+    {
+      "from": "颜色渐变.004",
+      "socket": "Color",
+      "to": "混合.002",
+      "inputIndex": 7
+    },
+    {
+      "from": "混合.002",
+      "socket": "Result",
+      "to": "混合",
+      "inputIndex": 7
+    },
+    {
+      "from": "混合.001",
+      "socket": "Result",
+      "to": "材质输出",
+      "inputIndex": 0
+    }
+  ],
+  "ramps": {
+    "颜色渐变": {
+      "interpolation": "EASE",
+      "stops": [
+        {
+          "at": 0.9999997615814209,
+          "color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "at": 1.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ]
+    },
+    "颜色渐变.001": {
+      "interpolation": "CONSTANT",
+      "stops": [
+        {
+          "at": 0.0,
+          "color": [
+            0.03957131877541542,
+            0.36288291215896606,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "at": 0.7772026658058167,
+          "color": [
+            1.0,
+            0.8612231016159058,
+            0.2073923498392105,
+            1.0
+          ]
+        }
+      ]
+    },
+    "颜色渐变.002": {
+      "interpolation": "CONSTANT",
+      "stops": [
+        {
+          "at": 0.0,
+          "color": [
+            0.7641023993492126,
+            0.564305305480957,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "at": 0.27202069759368896,
+          "color": [
+            0.38878312706947327,
+            0.9549933671951294,
+            1.0,
+            1.0
+          ]
+        }
+      ]
+    },
+    "颜色渐变.003": {
+      "interpolation": "CONSTANT",
+      "stops": [
+        {
+          "at": 0.0,
+          "color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "at": 0.1424870789051056,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ]
+    },
+    "颜色渐变.004": {
+      "interpolation": "LINEAR",
+      "stops": [
+        {
+          "at": 0.0,
+          "color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "at": 0.5,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "at": 1.0,
+          "color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        }
+      ]
+    },
+    "颜色渐变.005": {
+      "interpolation": "CONSTANT",
+      "stops": [
+        {
+          "at": 0.0,
+          "color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "at": 0.8782384395599365,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ]
+    },
+    "颜色渐变.006": {
+      "interpolation": "CONSTANT",
+      "stops": [
+        {
+          "at": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "at": 0.4248700439929962,
+          "color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        }
+      ]
+    }
+  },
+  "colorManagement": {
+    "view": "Khronos PBR Neutral",
+    "look": "High Contrast"
+  },
+  "scope": "Directional-light isotropic response sampled in Eevee; point-light attenuation and ocean self-shadowing require separate comparison.",
+  "brdfDimensions": [
+    256,
+    128,
+    97
+  ],
+  "brdfFile": "source-brdf.bin.gz",
+  "noiseFile": "source-noise.bin.gz",
+  "noiseDimensions": [
+    2048,
+    1024
+  ],
+  "noiseDomainY": [
+    -15,
+    15
+  ],
+  "noiseDomainZ": [
+    -3,
+    3.5
+  ],
+  "generatedTexspace": {
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "size": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "displayFile": "source-display.png",
+  "displaySize": 33,
+  "valueRanges": {
+    "brdfMin": 0.0,
+    "brdfMax": 1634.0
+  },
+  "brdfEncoding": "uint16-byteplanes-v1",
+  "brdfSha256": "67dd5448ed89259757282b3c06e37361ddead2b4b14664ed1d22eb566bc303ff"
+}
